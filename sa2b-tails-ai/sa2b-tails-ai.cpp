@@ -75,10 +75,12 @@ void AI_Movement(EntityData1* data, EntityData1* playerdata, EntityData1* botdat
 	if (IsPointInsideBox(&p1, &p2, &botdata->Position)) {
 		if (data->NextAction == AIState_AirAction) {
 			botdata->Rotation.y = -PositionToRotation(&botdata->Position, &playerdata->Position).y;
+			botco2->PhysData.Gravity = PhysicsArray[Characters_Tails].Gravity;
 			botco2->AnimInfo.Current = 92;
 			return;
 		}
 
+		data->field_2 = 0;
 		botco2->Speed = { 0, 0, 0 };
 	}
 	else {
@@ -89,6 +91,70 @@ void AI_Movement(EntityData1* data, EntityData1* playerdata, EntityData1* botdat
 		botco2->Speed.x = dist / 10 < botco2->PhysData.HSpeedCap ? dist / 10 : botco2->PhysData.HSpeedCap;
 	}
 }
+
+inline void AI_PerformJump(EntityData1* data, EntityData1* botdata, CharObj2Base* botco2, float height, float dist) {
+	botco2->Speed.y = fmax(2, height / 5);
+	botco2->Speed.x = fmax(1, dist / 20);
+	data->NextAction = AIState_Jumping;
+}
+
+
+void AI_Obstacles(EntityData1* data, EntityData1* playerdata, EntityData1* botdata, CharObj2Base* botco2, float dist, float distplayer) {
+	//check the conditions to jump, go around objects
+	float height = botdata->Position.y - data->Scale.y;
+	float test = PositionToRotation(&botdata->Position, &data->Scale).y;
+	if (dist > 20 && dist < 40 && height < -8 && height > -20 &&
+		test == botdata->Rotation.y && playerdata->Rotation.x == 0 && playerdata->Action < 5) {
+		AI_PerformJump(data, botdata, botco2, height, dist);
+	}
+
+	if (dist > 200) {
+		AI_PerformJump(data, botdata, botco2, height, dist);
+	}
+
+	if (FrameCountIngame % 100 == 0 && dist > 30) {
+		if (IsPointInsideSphere(&data->Position, &botdata->Position, 5)) {
+			AI_PerformJump(data, botdata, botco2, 10, 30);
+			data->field_2 += 1;
+		}
+
+		if (data->field_2 > 3) {
+			data->field_2 = 0;
+			botdata->Position = data->Scale;
+			botdata->Position.y += 50;
+		}
+
+		data->Position = botdata->Position;
+	}
+
+	if (dist > 600) {
+		botdata->Position = data->Scale;
+		botdata->Position.y += 50;
+	}
+}
+
+void AI_InAir(EntityData1* data, EntityData1* playerdata, EntityData1* botdata, CharObj2Base* botco2, float dist, float distplayer) {
+	if (data->NextAction == AIState_Jumping) {
+		botco2->AnimInfo.Current = 66;
+		botdata->Status |= Status_Ball;
+		botdata->Status |= Status_Attack;
+		botdata->Rotation.y = PositionToRotation(&botdata->Position, &data->Scale).y;
+
+		if (dist > 200 && FrameCountIngame % 120 == 0) {
+			data->NextAction = AIState_AirAction;
+			botdata->Status &= ~Status_Attack;
+			botdata->Status &= ~Status_Ball;
+			botdata->Action = 15;
+		}
+	}
+	else if (data->NextAction == AIState_AirAction) {
+		botco2->PhysData.Gravity = 0.02;
+		botco2->AnimInfo.Current = 90;
+		
+		AI_Movement(data, playerdata, botdata, botco2, dist, distplayer);
+	}
+}
+
 
 void AI_Delete(ObjectMaster* obj) {
 	IsTailsAI = false;
@@ -120,7 +186,17 @@ void AI_Main(ObjectMaster* obj) {
 		float dist = GetDistance(&botdata->Position, &data->Scale);
 
 		if (botdata->Status & Status_Ground) {
+			if (data->NextAction != AIState_Ground) {
+				botdata->Status &= ~Status_Ball;
+				botdata->Status &= ~Status_Attack;
+				data->NextAction = AIState_Ground;
+			}
+
 			AI_Movement(data, playerdata, botdata, botco2, dist, distplayer);
+			AI_Obstacles(data, playerdata, botdata, botco2, dist, distplayer);
+		}
+		else {
+			AI_InAir(data, playerdata, botdata, botco2, dist, distplayer);
 		}
 
 		return;
