@@ -195,6 +195,7 @@ void AI_InAir(EntityData1* data, EntityData1* playerdata, EntityData1* botdata, 
 
 
 void AI_Delete(ObjectMaster* obj) {
+	WriteData((char*)0x46B02E, (char)0x02);
 	IsTailsAI = false;
 }
 
@@ -251,12 +252,12 @@ extern "C"
 {
 	__declspec(dllexport) void Init() {
 		WriteJump((void*)0x46DCC0, GetPlayerNumberSP_asm);
-		WriteData((char*)0x46B02E, (char)0x01);
 	}
 
 	__declspec(dllexport) void OnFrame() {
 		if (GameState == GameStates_Ingame && CurrentCharacter == Characters_Sonic && !IsTailsAI && MainCharacter[0]) {
 			LoadAI(MainCharacter[0]);
+			WriteData((char*)0x46B02E, (char)0x01);
 			IsTailsAI = true;
 		}
 	}
