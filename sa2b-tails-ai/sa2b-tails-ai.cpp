@@ -65,6 +65,44 @@ NJS_VECTOR AI_GetPointToFollow(NJS_VECTOR* pos, float rotation) {
 	return point;
 }
 
+int __cdecl GetPlayerNumberSP(ObjectMaster *a1) {
+	if (IsTailsAI) {
+		return 0;
+	}
+	else {
+		EntityData1 *data = a1->Data1.Entity;
+		if (data) {
+			if (a1->Parent)
+			{
+				a1 = a1->Parent;
+			}
+			else if (data->field_2 == 5)
+			{
+				return data->NextAction;
+			}
+
+			char v2 = data->field_2;
+			if (v2 && v2 <= 4u)
+			{
+				return a1->Data2.Character->PlayerNum;
+			}
+		}
+	}
+
+	return -1;
+}
+
+static void __declspec(naked) GetPlayerNumberSP_asm(ObjectMaster *a1)
+{
+	__asm
+	{
+		push eax
+		call GetPlayerNumberSP
+		add esp, 4 // a1<eax> is also used for return value
+		retn
+	}
+}
+
 void AI_Movement(EntityData1* data, EntityData1* playerdata, EntityData1* botdata, CharObj2Base* botco2, float dist, float distplayer) {
 	//the Team Handler gives each AI a point which it must try to reach
 
@@ -211,6 +249,10 @@ void LoadAI(ObjectMaster* parent) {
 
 extern "C"
 {
+	__declspec(dllexport) void Init() {
+		WriteJump((void*)0x46DCC0, GetPlayerNumberSP_asm);
+	}
+
 	__declspec(dllexport) void OnFrame() {
 		if (GameState == GameStates_Ingame && CurrentCharacter == Characters_Sonic && !IsTailsAI && MainCharacter[0]) {
 			LoadAI(MainCharacter[0]);
