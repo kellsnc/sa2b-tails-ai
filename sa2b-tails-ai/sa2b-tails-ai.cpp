@@ -98,7 +98,7 @@ static void __declspec(naked) GetPlayerNumberSP_asm(ObjectMaster *a1)
 	{
 		push eax
 		call GetPlayerNumberSP
-		add esp, 4 // a1<eax> is also used for return value
+		add esp, 4
 		retn
 	}
 }
@@ -251,6 +251,7 @@ extern "C"
 {
 	__declspec(dllexport) void Init() {
 		WriteJump((void*)0x46DCC0, GetPlayerNumberSP_asm);
+		WriteData((char*)0x46B02E, (char)0x01);
 	}
 
 	__declspec(dllexport) void OnFrame() {
