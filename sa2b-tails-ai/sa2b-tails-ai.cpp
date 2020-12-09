@@ -2,6 +2,8 @@
 
 Trampoline* LoadCharacters_t = nullptr;
 
+ObjectMaster* TailsAI_Ptr = nullptr;
+
 enum AIActions {
 	AI_Start,
 	AI_Run
@@ -11,7 +13,7 @@ void CharacterAI_WriteAnalog(EntityData1* data, EntityData1* playerwk, CharObj2B
 	// do movements here
 }
 
-void CharacterAI(ObjectMaster* obj) {
+void CharacterAI_Main(ObjectMaster* obj) {
 	EntityData1* data = obj->Data1.Entity;
 	EntityData1* playerwk = MainCharObj1[data->Index];
 	CharObj2Base* playerco2 = MainCharObj2[data->Index];
@@ -27,12 +29,20 @@ void CharacterAI(ObjectMaster* obj) {
 	}
 }
 
+void CharacterAI_Delete(ObjectMaster* obj) {
+	TailsAI_Ptr = nullptr;
+}
+
 void LoadCharacterAI(int player) {
-	ObjectMaster* aitask = LoadObject(1, "CharacterAI", CharacterAI, LoadObj_Data1);
+	ObjectMaster* aitask = LoadObject(1, "CharacterAI", CharacterAI_Main, LoadObj_Data1);
 	EntityData1* data = aitask->Data1.Entity;
+
+	aitask->DeleteSub = CharacterAI_Delete;
 
 	data->Index = player;
 	data->Action = AI_Start;
+
+	TailsAI_Ptr = aitask;
 }
 
 void LoadCharacters_r() {
@@ -40,16 +50,19 @@ void LoadCharacters_r() {
 
 	if (TwoPlayerMode == false) {
 		if (CurrentCharacter == Characters_Sonic) {
-			LoadTails(1); // if you load tails first, no animation issue somehow
+			LoadTails(1); // If you load tails first, no animation issue somehow
 			LoadCharacterAI(1);
+			WriteData<1>((char*)0x46B02E, (char)0x01); // Deathzone only for P1
 		}
+	}
+	else {
+		WriteData<1>((char*)0x46B02E, (char)0x02); // Restore DeathZone
 	}
 
 	Original();
 }
 
-extern "C"
-{
+extern "C" {
 	__declspec(dllexport) void Init() {
 		LoadCharacters_t = new Trampoline((intptr_t)LoadCharacters, (intptr_t)LoadCharacters + 0x6, LoadCharacters_r);
 	}
