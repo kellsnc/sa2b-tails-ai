@@ -8,3 +8,4 @@
 #include <math.h>
 
 #include "SA2ModLoader.h"
+#include "Trampoline.h"
