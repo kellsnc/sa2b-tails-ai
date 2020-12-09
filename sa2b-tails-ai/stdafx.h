@@ -9,4 +9,4 @@
 
 #include "SA2ModLoader.h"
 #include "Trampoline.h"
-#include "abilities.h"
+#include "helper.h"
