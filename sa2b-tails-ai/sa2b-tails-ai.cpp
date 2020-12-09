@@ -38,9 +38,11 @@ void LoadCharacterAI(int player) {
 void LoadCharacters_r() {
 	NonStaticFunctionPointer(void, Original, (), LoadCharacters_t->Target());
 
-	if (CurrentCharacter == Characters_Sonic) {
-		LoadTails(1); // if you load tails first, no animation issue somehow
-		LoadCharacterAI(1);
+	if (TwoPlayerMode == false) {
+		if (CurrentCharacter == Characters_Sonic) {
+			LoadTails(1); // if you load tails first, no animation issue somehow
+			LoadCharacterAI(1);
+		}
 	}
 
 	Original();
