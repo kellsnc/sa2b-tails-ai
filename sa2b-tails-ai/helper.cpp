@@ -1,88 +1,55 @@
 #include "stdafx.h"
 
-void DisableController(Uint8 index) {
-    if (index && index != 1)
-    {
-        ControllerEnabled[0] = 0;
-        ControllerEnabled[1] = 0;
+void DisableController(int index) {
+    if (index && index != 1) {
+        ControllerEnabled[0] = false;
+        ControllerEnabled[1] = false;
     }
     else {
-        ControllerEnabled[index] = 0;
+        ControllerEnabled[index] = false;
     }
 }
 
-
-float __stdcall squareroot(float a1)
-{
-    double result; // st7
-
-    if (a1 >= 0.0)
-    {
-        result = sqrt(a1);
+void EnableController(int index) {
+    if (index && index != 1) {
+        ControllerEnabled[0] = true;
+        ControllerEnabled[1] = true;
     }
-    else
-    {
-        result = -sqrt(a1 * -1.0);
+    else {
+        ControllerEnabled[index] = true;
     }
-    return result;
 }
 
+float squareroot(float f) {
+    if (f >= 0.0f) {
+        return sqrtf(f);
+    }
+    else {
+        return -sqrtf(f * -1.0);
+    }
+}
 
-void GetPlayerSidePos(NJS_VECTOR* v, EntityData1* e, float m)
-{
-    Float _sin; // ST00_4
-
-    if (e)
-    {
-        if (v)
-        {
-            _sin = sin(e->Rotation.y);
-            v->x = e->Position.x - cos(e->Rotation.y) * m;
-            v->y = e->Position.y;
-            v->z = e->Position.z - _sin * m;
+void GetPlayerSidePos(NJS_VECTOR* pos, EntityData1* entity, float dist) {
+    if (entity) {
+        if (pos) {
+            pos->x = entity->Position.x - cos(entity->Rotation.y) * dist;
+            pos->y = entity->Position.y;
+            pos->z = entity->Position.z - sin(entity->Rotation.y) * dist;
         }
     }
 }
 
-
-void __cdecl SetToCameraPosition(NJS_VECTOR* a1)
-{
-    NJS_VECTOR* v1; // eax
-
-    v1 = &CameraData.Position;
-    a1->x = CameraData.Position.x;
-    a1->y = v1->y;
-    a1->z = v1->z;
+void SetToCameraPosition(NJS_VECTOR* pos) {
+    pos->x = CameraData.Position.x;
+    pos->y = CameraData.Position.y;
+    pos->z = CameraData.Position.z;
 }
 
-signed int TailsAI_RangeOut(EntityData1* p1, EntityData1* p2, ObjectMaster* a3)
-{
-    const NJS_VECTOR* p2Pos; // esi
-    double v4; // st7
-    double v5; // st6
-    double v6; // st5
-    float v7; // ST00_4
-    double v8; // st7
-    signed int result; // eax
-    EntityData1* v10; // eax
-    Sint16 v11; // cx
-    Vector3 a3a; // [esp+8h] [ebp-Ch]
+void ForcePlayerAction(EntityData1* data, GeneralActions gaction) {
+    data->NextAction = gaction;
+    data->Status |= Status_DoNextAction;
+}
 
-    p2Pos = &p2->Position;
-    v4 = p2->Position.x - p1->Position.x;
-    v5 = p2->Position.y - p1->Position.y;
-    v6 = p2->Position.z - p1->Position.z;
-    v7 = v6 * v6 + v5 * v5 + v4 * v4;
-    v8 = squareroot(v7);
-    if (v8 > 1000.0)
-    {
-
-    }
-    if (v8 >= 50.0)
-    {
-
-        result = 0;
-    }
-
-    return result;
+float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest) {
+    return squareroot(powf(dest->x - orig->x, 2) + powf(dest->y - orig->y, 2) + powf(dest->z - orig->z, 2));
 }
