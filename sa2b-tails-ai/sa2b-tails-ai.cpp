@@ -46,6 +46,19 @@ void SetTailsFlying(EntityData1* twk, motionwk* pwk, CharObj2Base* co2) {
 	ForcePlayerAction(twk, GeneralAction_Fly);
 }
 
+float AI_RangeMax(float xmag) {
+	if (xmag <= 1.0f) {
+		if (xmag < 0.1f) {
+			xmag = 0.0f;
+		}
+	}
+	else {
+		xmag = 1.0f;
+	}
+
+	return xmag;
+}
+
 void AI_BrakeVelocity(NJS_VECTOR* spd, float* xmag, Angle* rot) {
 	if (spd->x != 0.0 || spd->z != 0.0) {
 		if (xmag) {
@@ -146,16 +159,7 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 
 		break;
 	case AISubActions::Run:
-		xmag = mag * 0.05f;
-
-		if (xmag <= 1.0f) {
-			if (xmag < 0.1f) {
-				xmag = 0.0f;
-			}
-		} 
-		else {
-			xmag = 1.0f;
-		}
+		xmag = AI_RangeMax(mag * 0.05f);
 
 		if (leadpos->y + 3.0f > aipos->y) {
 			if (playermwk->spd.y >= 0.0f) {
@@ -169,6 +173,20 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 
 		if (playertwk->Status & (Status_Unknown1 | Status_Ground) && !(playertwk->Status & Status_Ball)) {
 			aiwk->subaction = AISubActions::Normal;
+		}
+
+		break;
+	case AISubActions::Unknown3:
+		xmag = AI_RangeMax(mag * 0.05f);
+
+		if (playertwk->Status & (Status_Unknown1 | Status_Ground)) {
+			aiwk->subaction = AISubActions::Normal;
+		}
+		else if (mag >= 20.0f || leadpos->y >= aipos->y) {
+			held |= JumpButtons;
+		}
+		else {
+			pressed = AttackButtons | Controllers[playerid].press;
 		}
 
 		break;

@@ -20,6 +20,7 @@ enum GeneralActions {
 };
 
 static Buttons JumpButtons = Buttons_A;
+static Buttons AttackButtons = Buttons_X;
 
 void ForcePlayerAction(EntityData1* data, GeneralActions gaction);
 void DisableController(int index);
