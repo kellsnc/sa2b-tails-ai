@@ -329,7 +329,11 @@ void LoadCharacters_r() {
 	if (TwoPlayerMode == false) {
 		if (CurrentCharacter == Characters_Sonic) {
 			LoadTailsWithAI(1);
+			WriteData<1>((char*)0x46B02E, (char)0x01); // Deathzone only for P1
 		}
+	}
+	else {
+		WriteData<1>((char*)0x46B02E, (char)0x02); // Restore DeathZone
 	}
 
 	Original();
