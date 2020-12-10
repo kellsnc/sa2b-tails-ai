@@ -133,12 +133,37 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 		if (playertwk->Status & (Status_Unknown1 | Status_Ground)) {
 			if (leadpos->y - aipos->y > 20.0f && leadco2->Speed.x < leadco2->PhysData.RollEnd) {
 				pressed |= JumpButtons;
-				//aiwk->subaction = AISubActions::Run;
+				aiwk->subaction = AISubActions::Run;
 			}
 		}
 
 		break;
 	case AISubActions::Run:
+		xmag = mag * 0.05f;
+
+		if (xmag <= 1.0f) {
+			if (xmag < 0.1f) {
+				xmag = 0.0f;
+			}
+		} 
+		else {
+			xmag = 1.0f;
+		}
+
+		if (leadpos->y + 3.0f > aipos->y) {
+			if (playermwk->spd.y >= 0.0f) {
+				held |= JumpButtons;
+			}
+			else {
+				pressed = JumpButtons | Controllers[playerid].press;
+				aiwk->subaction = AISubActions::Unknown3;
+			}
+		}
+
+		if (playertwk->Status & (Status_Unknown1 | Status_Ground) && !(playertwk->Status & Status_Ball)) {
+			aiwk->subaction = AISubActions::Normal;
+		}
+
 		break;
 	default:
 		return;
