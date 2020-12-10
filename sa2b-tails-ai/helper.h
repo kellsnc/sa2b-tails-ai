@@ -16,7 +16,7 @@ struct motionwk {
 DataArray(motionwk*, MainCharMotions, 0x1DE95E0, MaxPlayers);
 
 enum GeneralActions {
-	GeneralAction_Fly = 59
+	GeneralAction_Fly = 37
 };
 
 static Buttons JumpButtons = Buttons_A;
