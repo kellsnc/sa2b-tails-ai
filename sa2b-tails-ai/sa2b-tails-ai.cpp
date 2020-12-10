@@ -19,7 +19,7 @@ enum AIActions {
 enum AISubActions {
 	AISub_Init,
 	AISub_Normal,
-	AISub_Walk,
+	AISub_Run,
 	AISub_Unknown3,
 	AISub_Unknown4,
 	AISub_Unknown5
@@ -105,12 +105,12 @@ void CharacterAI_WriteAnalog(EntityData1* data, EntityData1* playertwk, motionwk
 		if (playertwk->Status & (Status_Unknown1 | Status_Ground)) {
 			if (leadpos->y - aipos->y > 20.0f && leadco2->Speed.x < leadco2->PhysData.RollEnd) {
 				pressed |= JumpButtons;
-				data->NextAction = AISub_Walk;
+				data->NextAction = AISub_Run;
 			}
 		}
 
 		break;
-	case AISub_Walk:
+	case AISub_Run:
 		break;
 	default:
 		return;
@@ -124,7 +124,7 @@ void CharacterAI_WriteAnalog(EntityData1* data, EntityData1* playertwk, motionwk
 	{
 		data->Status = 0;
 		pressed |= JumpButtons;
-		data->NextAction = AISub_Walk;
+		data->NextAction = AISub_Run;
 	}
 
 	data->Position = *aipos;
