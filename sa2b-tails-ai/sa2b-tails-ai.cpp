@@ -95,13 +95,6 @@ bool AI_RangeOut(EntityData1* p1, EntityData1* p2) {
 	return false;
 }
 
-int __cdecl DamagePlayer_r(EntityData1* data1, CharObj2Base* data2) {
-	if (TailsAIWorker && data2->CharID == Characters_Tails)
-		return 0;
-
-	return DamagePlayer(data1, data2);
-}
-
 void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, CharObj2Base* playerco2, EntityData1* leadertwk) {
 	int playerid = playerco2->PlayerNum;
 	int leaderid = 0;
@@ -309,7 +302,7 @@ void __cdecl TailsWithAI_Main(ObjectMaster* obj) {
 }
 
 void __cdecl TailsWithAI_Delete(ObjectMaster* obj) {
-	delete TailsAIWorker;
+	delete obj->field_4C;
 }
 
 void LoadTailsWithAI(int playerid) {
@@ -337,6 +330,16 @@ void LoadCharacters_r() {
 	}
 
 	Original();
+}
+
+// Fix functions
+
+int __cdecl DamagePlayer_r(EntityData1* data1, CharObj2Base* data2) {
+	if (TailsAIWorker && data2->PlayerNum == 1 && data2->CharID == Characters_Tails) {
+		return 0;
+	}
+	
+	return DamagePlayer(data1, data2);
 }
 
 extern "C" {
