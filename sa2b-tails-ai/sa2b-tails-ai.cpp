@@ -61,6 +61,13 @@ bool AI_RangeOut(EntityData1* p1, EntityData1* p2) {
 	return false;
 }
 
+int __cdecl DamagePlayer_r(EntityData1* data1, CharObj2Base* data2) {
+	if (TailsAIWorker && data2->CharID == Characters_Tails)
+		return 0;
+
+	return DamagePlayer(data1, data2);
+}
+
 void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, CharObj2Base* playerco2, EntityData1* leadertwk) {
 	int playerid = playerco2->PlayerNum;
 	int leaderid = 0;
@@ -270,6 +277,7 @@ void LoadCharacters_r() {
 extern "C" {
 	__declspec(dllexport) void Init() {
 		LoadCharacters_t = new Trampoline((intptr_t)LoadCharacters, (intptr_t)LoadCharacters + 0x6, LoadCharacters_r);
+		WriteCall((void*)0x74dc9c, DamagePlayer_r);
 	}
 
 	__declspec(dllexport) ModInfo SA2ModInfo = { ModLoaderVer };
