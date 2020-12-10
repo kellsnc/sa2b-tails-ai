@@ -4,6 +4,8 @@ Trampoline* LoadCharacters_t = nullptr;
 
 ObjectMaster* TailsAI_Ptr = nullptr;
 
+AnalogThing CopyAnalog[MaxPlayers];
+
 enum AIActions {
 	AI_Start,
 	AI_Unknown1,
@@ -88,7 +90,7 @@ void CharacterAI_WriteAnalog(EntityData1* data, EntityData1* playertwk, motionwk
 				xmag = (mag - 20.0f) * 0.025f + 0.5f;
 			}
 		}
-		else if (leadco2->Speed.x >= (double)leadco2->PhysData.RollCancel || co2->Speed.x <= (double)co2->PhysData.RollEnd) {
+		else if (leadco2->Speed.x >= (double)leadco2->PhysData.RollCancel /*|| co2->Speed.x <= (double)co2->PhysData.RollEnd*/) {
 			if (co2->Speed.x == 0.0f && mag >= 1.0f) {
 				xmag = 0.0049999999f;
 			}
@@ -105,7 +107,7 @@ void CharacterAI_WriteAnalog(EntityData1* data, EntityData1* playertwk, motionwk
 		if (playertwk->Status & (Status_Unknown1 | Status_Ground)) {
 			if (leadpos->y - aipos->y > 20.0f && leadco2->Speed.x < leadco2->PhysData.RollEnd) {
 				pressed |= JumpButtons;
-				data->NextAction = AISub_Run;
+				//data->NextAction = AISub_Run;
 			}
 		}
 
@@ -135,6 +137,8 @@ void CharacterAI_WriteAnalog(EntityData1* data, EntityData1* playertwk, motionwk
 
 	AnalogThings[playerid].direction = angle;
 	AnalogThings[playerid].magnitude = xmag;
+
+	CopyAnalog[playerid] = AnalogThings[playerid];
 }
 
 void CharacterAI_Main(ObjectMaster* obj) {
@@ -252,6 +256,7 @@ void LoadCharacters_r() {
 	if (TwoPlayerMode == false) {
 		if (CurrentCharacter == Characters_Sonic) {
 			LoadTails(1); // If you load tails first, no animation issue somehow
+			InitPlayer(1);
 			LoadCharacterAI(1, 0);
 			WriteData<1>((char*)0x46B02E, (char)0x01); // Deathzone only for P1
 		}
@@ -261,6 +266,21 @@ void LoadCharacters_r() {
 	}
 
 	Original();
+}
+
+// Temporary trampoline because this game sucks
+void __cdecl Tails_r(ObjectMaster* obj);
+Trampoline Tails_t((int)Tails_Main, (int)Tails_Main + 0x6, Tails_r);
+void __cdecl Tails_r(ObjectMaster* obj) {
+	ObjectFunc(orig, Tails_t.Target());
+
+	if (CopyAnalog[1].direction) {
+		AnalogThings[1].magnitude = CopyAnalog[1].magnitude;
+		AnalogThings[1].direction = CopyAnalog[1].direction;
+	}
+	
+	orig(obj);
+	TwoPlayerMode = 0;
 }
 
 extern "C" {
