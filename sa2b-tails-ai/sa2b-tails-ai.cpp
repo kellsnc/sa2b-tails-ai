@@ -46,6 +46,27 @@ void SetTailsFlying(EntityData1* twk, motionwk* pwk, CharObj2Base* co2) {
 	ForcePlayerAction(twk, GeneralAction_Fly);
 }
 
+void AI_BrakeVelocity(NJS_VECTOR* spd, float* xmag, Angle* rot) {
+	if (spd->x != 0.0 || spd->z != 0.0) {
+		if (xmag) {
+			*xmag = 1.0;
+		}
+
+		if (rot) {
+			*rot = 0x8000 - (unsigned __int64)(atan2(spd->z, spd->x) * 65536.0 * -0.1591549762031479);
+		}
+	}
+	else {
+		if (xmag) {
+			*xmag = 0.0;
+		}
+
+		if (rot) {
+			*rot = 0;
+		}
+	}
+}
+
 bool AI_RangeOut(EntityData1* p1, EntityData1* p2) {
 	float dist = GetDistance(&p1->Position, &p2->Position);
 
@@ -89,7 +110,6 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 		aiwk->subaction = AISubActions::Normal;
 		break;
 	case AISubActions::Normal:
-
 		if (mag >= 15.0f) {
 			if (mag >= 40.0f) {
 				xmag = 1.0f;
@@ -98,7 +118,7 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 				xmag = (mag - 20.0f) * 0.025f + 0.5f;
 			}
 		}
-		else if (leadco2->Speed.x >= (double)leadco2->PhysData.RollCancel /*|| co2->Speed.x <= (double)co2->PhysData.RollEnd*/) {
+		else if (leadco2->Speed.x >= (double)leadco2->PhysData.RollCancel || playerco2->Speed.x <= (double)playerco2->PhysData.RollEnd) {
 			if (playerco2->Speed.x == 0.0f && mag >= 1.0f) {
 				xmag = 0.0049999999f;
 			}
@@ -106,10 +126,8 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 				xmag = 0.0f;
 			}
 		}
-		else
-		{
-			//sub_47DE00(&EntityData2Ptrs[1]->VelocityDirection, &xmag, &angle);
-			xmag = 1.0f;
+		else {
+			AI_BrakeVelocity(&playermwk->spd, &xmag, &angle);
 		}
 
 		if (playertwk->Status & (Status_Unknown1 | Status_Ground)) {
