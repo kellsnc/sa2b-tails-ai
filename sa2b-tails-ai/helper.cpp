@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
-NJS_VECTOR PositionBuffer[2048];
-Rotation RotationBuffer[2048];
-char PosRotBufferIndex[8];
+NJS_VECTOR PositionBuffer[MaxPlayers * 256];
+Rotation RotationBuffer[MaxPlayers * 256];
+int PosRotBufferIndex[MaxPlayers];
 
 void DisableController(int index) {
     if (index && index != 1) {
@@ -33,6 +33,14 @@ float squareroot(float f) {
     }
 }
 
+float normalizevector(NJS_VECTOR* vo, NJS_VECTOR* vd) {
+    float nmag = 1.0f / squareroot(vo->z * vo->z + vo->y * vo->y + vo->x * vo->x);
+    vd->x = vo->x * nmag;
+    vd->y = vo->y * nmag;
+    vd->z = vo->z * nmag;
+    return nmag;
+}
+
 void GetPlayerSidePos(NJS_VECTOR* pos, EntityData1* entity, float dist) {
     if (entity) {
         if (pos) {
@@ -43,28 +51,24 @@ void GetPlayerSidePos(NJS_VECTOR* pos, EntityData1* entity, float dist) {
     }
 }
 
-signed int __cdecl SavePlayerPosition(unsigned __int8 playerNum, char a2, NJS_VECTOR* a3, NJS_VECTOR* a4)
-{
-    unsigned __int8 v4; // dl
-    int i; // eax
+bool SavePlayerPosition(int playerNum, int unk, NJS_VECTOR* pos, Rotation* rot) {
+    int index = PosRotBufferIndex[playerNum] - unk;
 
-    v4 = PosRotBufferIndex[playerNum] - a2;
-    if (!MainCharacter[playerNum])
-    {
-        return 0;
+    if (!MainCharacter[playerNum]) {
+        return false;
     }
-    if (a3)
-    {
-        PositionBuffer[playerNum + 8 * v4] = *a3;
+
+    if (pos) {
+        PositionBuffer[playerNum + (MaxPlayers * index)] = *pos;
     }
-    if (a4)
-    {
-        i = playerNum + 8 * v4;
-        RotationBuffer[i].x = a4->x;
-        RotationBuffer[i].y = a4->y;
-        RotationBuffer[i].z = a4->z;
+
+    if (rot) {
+        RotationBuffer[playerNum + (MaxPlayers * index)].x = rot->x;
+        RotationBuffer[playerNum + (MaxPlayers * index)].y = rot->y;
+        RotationBuffer[playerNum + (MaxPlayers * index)].z = rot->z;
     }
-    return 1;
+
+    return true;
 }
 
 void SetToCameraPosition(NJS_VECTOR* pos) {

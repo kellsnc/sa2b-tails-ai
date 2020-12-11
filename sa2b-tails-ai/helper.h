@@ -16,6 +16,8 @@ struct motionwk {
 DataArray(motionwk*, MainCharMotions, 0x1DE95E0, MaxPlayers);
 
 enum GeneralActions {
+	GeneralActions_12 = 12,
+	GeneralActions_24 = 24,
 	GeneralAction_Fly = 37
 };
 
@@ -28,4 +30,5 @@ void EnableController(int index);
 void GetPlayerSidePos(NJS_VECTOR* pos, EntityData1* entity, float dist);
 void SetToCameraPosition(NJS_VECTOR* pos);
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
-signed int __cdecl SavePlayerPosition(unsigned __int8 playerNum, char a2, NJS_VECTOR* a3, NJS_VECTOR* a4);
+bool SavePlayerPosition(int playerNum, int unk, NJS_VECTOR* pos, Rotation* rot);
+float normalizevector(NJS_VECTOR* vo, NJS_VECTOR* vd);

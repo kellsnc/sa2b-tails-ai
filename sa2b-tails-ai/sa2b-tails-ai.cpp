@@ -184,28 +184,34 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 
 		break;
 		case AISubActions::Unknown4:
-			v12 = mag * 0.050000001;
-			xmag = v12;
-			if (v12 <= 1.0) {
-				if (xmag < 0.1) {
-					xmag = 0.0;
-				}
-			}
-			else {
-				xmag = 1.0;
-			}
+			xmag = AI_RangeMax(mag * 0.05f);
 
 			if (playertwk->Status & (Status_Unknown1 | Status_Ground)) {
 				aiwk->subaction = AISubActions::Normal;
 			}
-			else if (playertwk->Position.y - leadpos->y < 20.0)
+			else if (playertwk->Position.y - leadpos->y < 20.0f)
 			{
 				aiwk->subaction = AISubActions::Unknown3;
 				pressed |= JumpButtons;
 				held |= JumpButtons;
 			}
+
 			break;
 		case AISubActions::Unknown5:
+			diff.x = leadpos->x - aipos->x;
+			diff.y = leadpos->y - aipos->y;
+			diff.z = leadpos->z - aipos->z;
+
+			if (njScalor(&diff) < 50.0f || playertwk->Status & Status_Hurt) {
+				aiwk->subaction = AISubActions::Normal;
+				held |= AttackButtons;
+			}
+			else {
+				normalizevector(&diff, &diff);
+				aipos->x += diff.x;
+				aipos->y += diff.y;
+				aipos->z += diff.z;
+			}
 			break;
 	default:
 		return;
@@ -235,7 +241,6 @@ void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, Ch
 	int playerid = playerco2->PlayerNum;
 
 	EntityData1* leadertwk = MainCharObj1[leaderid];
-
 
 	switch (aiwk->action) {
 	case AIActions::Start: // Place the AI behind the leader
@@ -312,16 +317,32 @@ void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, Ch
 
 		break;
 	case AIActions::Unknown6:
+		playertwk->Position = leadertwk->Position;
 		playertwk->Position.y += 1000000.0f;
 		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
+		aiwk->action = AIActions::Start;
 		break;
 	case AIActions::Unknown7:
+		playertwk->Position = leadertwk->Position;
 		playertwk->Position.y += 1000000.0f;
 		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
+		aiwk->timer_rangeout += 1;
+
+		if (aiwk->timer_rangeout > 3) {
+			ForcePlayerAction(playertwk, GeneralActions_12);
+			aiwk->action = AIActions::Unknown8;
+		}
 		break;
 	case AIActions::Unknown8:
+		playertwk->Position = leadertwk->Position;
 		playertwk->Position.y += 1000000.0f;
 		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
+
+		// SADX checks if TailsAI exists within TailsAI here, we don't.
+		ForcePlayerAction(playertwk, GeneralActions_24);
+		DisableController(1u);
+		aiwk->action = AIActions::Respawn;
+
 		break;
 	default:
 		return;
