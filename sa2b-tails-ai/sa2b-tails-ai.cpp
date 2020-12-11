@@ -114,7 +114,7 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 	Angle angle = atan2f(zmag, xmag) * 65536.0 * 0.1591549762031479;
 
 	xmag = 0.0f;
-
+	double v12 = 0.0f;
 	int pressed = 0;
 	int held = 0;
 
@@ -183,6 +183,30 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 		}
 
 		break;
+		case AISubActions::Unknown4:
+			v12 = mag * 0.050000001;
+			xmag = v12;
+			if (v12 <= 1.0) {
+				if (xmag < 0.1) {
+					xmag = 0.0;
+				}
+			}
+			else {
+				xmag = 1.0;
+			}
+
+			if (playertwk->Status & (Status_Unknown1 | Status_Ground)) {
+				aiwk->subaction = AISubActions::Normal;
+			}
+			else if (playertwk->Position.y - leadpos->y < 20.0)
+			{
+				aiwk->subaction = AISubActions::Unknown3;
+				pressed |= JumpButtons;
+				held |= JumpButtons;
+			}
+			break;
+		case AISubActions::Unknown5:
+			break;
 	default:
 		return;
 	}
@@ -212,22 +236,26 @@ void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, Ch
 
 	EntityData1* leadertwk = MainCharObj1[leaderid];
 
+
 	switch (aiwk->action) {
 	case AIActions::Start: // Place the AI behind the leader
 		DisableController(playerid);
+		aiwk->timer_rangeout = 0;
 		GetPlayerSidePos(&playertwk->Position, leadertwk, 10.0);
-		
+		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
 		aiwk->action = AIActions::Run;
 		aiwk->subaction = AISubActions::Init;
 		break;
 	case AIActions::Unknown1:
 		playertwk->Position = leadertwk->Position;
 		playertwk->Position.y += 1000000.0f;
+		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
 		break;
 	case AIActions::Respawn: // Respawn after being too far
 		DisableController(playerid);
 		SetToCameraPosition(&playertwk->Position);
 		playertwk->Position.y = leadertwk->Position.y + 50.0f;
+		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
 		SetTailsFlying(playertwk, playermwk, playerco2);
 		Controllers[playerid].on |= Buttons_A;
 		Controllers[playerid].press |= Buttons_A;
@@ -284,10 +312,16 @@ void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, Ch
 
 		break;
 	case AIActions::Unknown6:
+		playertwk->Position.y += 1000000.0f;
+		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
 		break;
 	case AIActions::Unknown7:
+		playertwk->Position.y += 1000000.0f;
+		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
 		break;
 	case AIActions::Unknown8:
+		playertwk->Position.y += 1000000.0f;
+		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
 		break;
 	default:
 		return;

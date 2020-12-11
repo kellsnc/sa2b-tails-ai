@@ -28,3 +28,4 @@ void EnableController(int index);
 void GetPlayerSidePos(NJS_VECTOR* pos, EntityData1* entity, float dist);
 void SetToCameraPosition(NJS_VECTOR* pos);
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
+signed int __cdecl SavePlayerPosition(unsigned __int8 playerNum, char a2, NJS_VECTOR* a3, NJS_VECTOR* a4);
