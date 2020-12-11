@@ -18,7 +18,7 @@ DataArray(motionwk*, MainCharMotions, 0x1DE95E0, MaxPlayers);
 enum GeneralActions {
 	GeneralActions_12 = 12,
 	GeneralActions_24 = 24,
-	GeneralAction_Fly = 37
+	GeneralAction_Fly = 29
 };
 
 static Buttons JumpButtons = Buttons_A;

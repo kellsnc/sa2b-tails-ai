@@ -234,6 +234,8 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 
 	AnalogThings[playerid].direction = angle;
 	AnalogThings[playerid].magnitude = xmag;
+
+	UpdateUselessButtonPressBooleans();
 }
 
 void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, CharObj2Base* playerco2) {
@@ -400,7 +402,6 @@ int __cdecl DamagePlayer_r(EntityData1* data1, CharObj2Base* data2) {
 extern "C" {
 	__declspec(dllexport) void Init() {
 		LoadCharacters_t = new Trampoline((intptr_t)LoadCharacters, (intptr_t)LoadCharacters + 0x6, LoadCharacters_r);
-		WriteCall((void*)0x74dc9c, DamagePlayer_r);
 	}
 
 	__declspec(dllexport) ModInfo SA2ModInfo = { ModLoaderVer };
