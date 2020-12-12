@@ -370,6 +370,12 @@ void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, Ch
 
 // Tails' Object with the AI:
 
+void __cdecl TailsWithAI_AlphaDisplay(ObjectMaster* obj) {
+	WriteData((NJS_MOTION***)0x750182, &TailsAnimIndices->Animation);
+	Tails_AlphaDisplay(obj);
+	WriteData((NJS_MOTION***)0x750182, &CharacterAnimations->Animation);
+}
+
 void __cdecl TailsWithAI_Display(ObjectMaster* obj) {
 	WriteData((NJS_MOTION***)0x750A94, &TailsAnimIndices->Animation);
 	Tails_Display(obj);
@@ -379,6 +385,8 @@ void __cdecl TailsWithAI_Display(ObjectMaster* obj) {
 void __cdecl TailsWithAI_Main(ObjectMaster* obj) {
 	TailsAI_Main((TailsAI*)obj->field_4C, obj->Data1.Entity, (motionwk*)obj->EntityData2, obj->Data2.Character);
 	Tails_Main(obj);
+
+	CameraScreensInfoArray[1] = CameraScreensInfoArray[0];
 }
 
 void __cdecl TailsWithAI_Delete(ObjectMaster* obj) {
@@ -391,6 +399,7 @@ void LoadTailsWithAI(int playerid) {
 	WriteData((uint16_t**)0x459833, &TailsAnimIndices->Count);
 	WriteData((NJS_MOTION***)0x45983D, &TailsAnimIndices->Animation);
 
+	LoadMTNFile((char*)"PLCOMMTN.PRS");
 	LoadTails(1);
 
 	WriteData((NJS_MOTION***)0x459815, &CharacterAnimations->Animation);
@@ -400,6 +409,7 @@ void LoadTailsWithAI(int playerid) {
 	TailsAIWorker = new TailsAI();
 
 	MainCharacter[playerid]->field_4C = TailsAIWorker;
+	MainCharacter[playerid]->field_2C = TailsWithAI_AlphaDisplay;
 	MainCharacter[playerid]->DisplaySub = TailsWithAI_Display;
 	MainCharacter[playerid]->MainSub = TailsWithAI_Main;
 	MainCharacter[playerid]->DeleteSub = TailsWithAI_Delete;
@@ -419,8 +429,6 @@ void LoadCharacters_r() {
 	else {
 		WriteData<1>((char*)0x46B02E, (char)0x02); // Restore DeathZone
 	}
-
-	//Original();
 }
 
 // Fix functions

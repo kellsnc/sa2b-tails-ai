@@ -13,6 +13,7 @@ struct motionwk {
 	float weight;
 };
 
+ObjectFunc(Tails_AlphaDisplay, 0x74FF20);
 DataArray(motionwk*, MainCharMotions, 0x1DE95E0, MaxPlayers);
 
 enum GeneralActions {
