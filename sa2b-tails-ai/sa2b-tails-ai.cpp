@@ -379,7 +379,6 @@ void __cdecl TailsWithAI_Delete(ObjectMaster* obj) {
 }
 
 void LoadTailsWithAI(int playerid) {
-	// Hack to load anims in a separate list
 	LoadTails(1);
 
 	TailsAIWorker = new TailsAI();
