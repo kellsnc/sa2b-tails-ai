@@ -2,9 +2,6 @@
 
 Trampoline* LoadCharacters_t = nullptr;
 
-// We have to make a copy of this list just for Tails as SA2 can't have two anim sets.
-AnimationIndex TailsAnimIndices[300];
-
 enum class AIActions {
 	Start,
 	Unknown1,
@@ -279,14 +276,14 @@ void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, Ch
 		DisableController(playerid);
 		SetToCameraPosition(&playertwk->Position);
 		playertwk->Position.y = leadertwk->Position.y + 50.0f;
-		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
-		SetTailsFlying(playertwk, playermwk, playerco2);
-		Controllers[playerid].on |= Buttons_A;
-		Controllers[playerid].press |= Buttons_A;
-		
-		aiwk->action = AIActions::Run;
-		aiwk->subaction = AISubActions::Unknown3;
-		break;
+SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
+SetTailsFlying(playertwk, playermwk, playerco2);
+Controllers[playerid].on |= Buttons_A;
+Controllers[playerid].press |= Buttons_A;
+
+aiwk->action = AIActions::Run;
+aiwk->subaction = AISubActions::Unknown3;
+break;
 	case AIActions::Fly:
 		DisableController(playerid);
 		SetTailsFlying(playertwk, playermwk, playerco2);
@@ -370,18 +367,6 @@ void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, Ch
 
 // Tails' Object with the AI:
 
-void __cdecl TailsWithAI_AlphaDisplay(ObjectMaster* obj) {
-	WriteData((NJS_MOTION***)0x750182, &TailsAnimIndices->Animation);
-	Tails_AlphaDisplay(obj);
-	WriteData((NJS_MOTION***)0x750182, &CharacterAnimations->Animation);
-}
-
-void __cdecl TailsWithAI_Display(ObjectMaster* obj) {
-	WriteData((NJS_MOTION***)0x750A94, &TailsAnimIndices->Animation);
-	Tails_Display(obj);
-	WriteData((NJS_MOTION***)0x750A94, &CharacterAnimations->Animation);
-}
-
 void __cdecl TailsWithAI_Main(ObjectMaster* obj) {
 	TailsAI_Main((TailsAI*)obj->field_4C, obj->Data1.Entity, (motionwk*)obj->EntityData2, obj->Data2.Character);
 	Tails_Main(obj);
@@ -395,33 +380,18 @@ void __cdecl TailsWithAI_Delete(ObjectMaster* obj) {
 
 void LoadTailsWithAI(int playerid) {
 	// Hack to load anims in a separate list
-	WriteData((NJS_MOTION***)0x459815, &TailsAnimIndices->Animation);
-	WriteData((uint16_t**)0x459833, &TailsAnimIndices->Count);
-	WriteData((NJS_MOTION***)0x45983D, &TailsAnimIndices->Animation);
-
-	LoadMTNFile((char*)"PLCOMMTN.PRS");
 	LoadTails(1);
-
-	WriteData((NJS_MOTION***)0x459815, &CharacterAnimations->Animation);
-	WriteData((uint16_t**)0x459833, &CharacterAnimations->Count);
-	WriteData((NJS_MOTION***)0x45983D, &CharacterAnimations->Animation);
 
 	TailsAIWorker = new TailsAI();
 
 	MainCharacter[playerid]->field_4C = TailsAIWorker;
-	MainCharacter[playerid]->field_2C = TailsWithAI_AlphaDisplay;
-	MainCharacter[playerid]->DisplaySub = TailsWithAI_Display;
 	MainCharacter[playerid]->MainSub = TailsWithAI_Main;
 	MainCharacter[playerid]->DeleteSub = TailsWithAI_Delete;
-
-	TailsCharObj2* tco2 = (TailsCharObj2*)MainCharObj2[playerid];
-	tco2->MotionList = TailsAnimIndices;
 }
 
 void LoadCharacters_r() {
 	NonStaticFunctionPointer(void, Original, (), LoadCharacters_t->Target());
-	Original();
-
+	
 	// Load Tails AI if in a Sonic level
 	if (TwoPlayerMode == false) {
 		if (CurrentCharacter == Characters_Sonic) {
@@ -432,6 +402,8 @@ void LoadCharacters_r() {
 	else {
 		WriteData<1>((char*)0x46B02E, (char)0x02); // Restore DeathZone
 	}
+
+	Original();
 }
 
 // Fix functions
