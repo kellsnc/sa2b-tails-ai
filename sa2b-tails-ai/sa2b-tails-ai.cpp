@@ -413,6 +413,9 @@ void LoadTailsWithAI(int playerid) {
 	MainCharacter[playerid]->DisplaySub = TailsWithAI_Display;
 	MainCharacter[playerid]->MainSub = TailsWithAI_Main;
 	MainCharacter[playerid]->DeleteSub = TailsWithAI_Delete;
+
+	TailsCharObj2* tco2 = (TailsCharObj2*)MainCharObj2[playerid];
+	tco2->MotionList = TailsAnimIndices;
 }
 
 void LoadCharacters_r() {
