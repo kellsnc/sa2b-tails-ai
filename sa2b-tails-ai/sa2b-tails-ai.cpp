@@ -235,7 +235,21 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 	AnalogThings[playerid].direction = angle;
 	AnalogThings[playerid].magnitude = xmag;
 
-	UpdateUselessButtonPressBooleans();
+	if (pressed & JumpButtons) {
+		Jump_Pressed[playerid] = true;
+	}
+	
+	if (held & JumpButtons) {
+		Jump_Held[playerid] = true;
+	}
+
+	if (pressed & AttackButtons) {
+		Action_Pressed[playerid] = true;
+	}
+
+	if (held & AttackButtons) {
+		Action_Held[playerid] = true;
+	}
 }
 
 void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, CharObj2Base* playerco2) {
@@ -399,72 +413,63 @@ int __cdecl DamagePlayer_r(EntityData1* data1, CharObj2Base* data2) {
 	return DamagePlayer(data1, data2);
 }
 
-
-void RemoveTailsVoice(int idk, int num) {
-	if (TailsAIWorker)
+void __cdecl RemoveTailsVoice(int idk, int num) {
+	if (TailsAIWorker) {
 		return;
-
+	}
+	
 	PlayVoice(idk, num);
 }
 
-
-static void __declspec(naked) PlayVoiceAsm(int idk, int num)
-{
+static void __declspec(naked) PlayVoiceAsm(int idk, int num) {
 	__asm
 	{
-		push[esp + 04h] // num
-		push edx // idk
+		push[esp + 04h]
+		push edx
 
-		// Call your __cdecl function here:
 		call RemoveTailsVoice
 
-		pop edx // idk
-		add esp, 4 // num
+		pop edx
+		add esp, 4
 		retn
 	}
 }
 
-void RemoveTailsSound(int a1, int a2, char a3, char a4) {
-	if (TailsAIWorker)
+void __cdecl RemoveTailsSound(int ID, int Entity, char Bank, char Volume) {
+	if (TailsAIWorker) {
 		return;
-
-	PlaySoundProbably(a1, a2, a3, a4);
+	}
+	
+	PlaySoundProbably(ID, Entity, Bank, Volume);
 }
 
-static void __declspec(naked) PlaySoundAsm(int a1, int a2, char a3, char a4)
-{
+static void __declspec(naked) PlaySoundAsm(int ID, int Entity, char Bank, char Volume) {
 	__asm
 	{
-		push[esp + 0Ch] // a4
-		push[esp + 0Ch] // a3
-		push[esp + 0Ch] // a2
-		push esi // a1
-
-		// Call your __cdecl function here:
+		push[esp + 0Ch] // Volume
+		push[esp + 0Ch] // Bank
+		push[esp + 0Ch] // Entity
+		push esi // ID
 		call RemoveTailsSound
-
-		pop esi // a1
-		add esp, 4 // a2
-		add esp, 4 // a3
-		add esp, 4 // a4
+		pop esi
+		add esp, 12
 		retn
 	}
 }
-
-
-
 
 extern "C" {
 	__declspec(dllexport) void Init() {
 		LoadCharacters_t = new Trampoline((intptr_t)LoadCharacters, (intptr_t)LoadCharacters + 0x6, LoadCharacters_r);
 		WriteCall((void*)0x74dc9c, DamagePlayer_r);
-		WriteCall((void*)0x751c90, PlayVoiceAsm); //Remove Tails voice when AI
-		WriteCall((void*)0x752de1, PlayVoiceAsm);		
-		WriteCall((void*)0x751c7e, PlaySoundAsm); //Remove Tails Sound Effect when AI	
-		WriteCall((void*)0x74eb6a, PlaySoundAsm);
+
+		////Remove Tails voice when AI
+		WriteCall((void*)0x751C90, PlayVoiceAsm);
+		WriteCall((void*)0x752DE1, PlayVoiceAsm);
+
+		////Remove Tails Sound Effects when AI
+		WriteCall((void*)0x751C7E, PlaySoundAsm);
+		WriteCall((void*)0x74EB6A, PlaySoundAsm);
 	}
-
-
 
 	__declspec(dllexport) ModInfo SA2ModInfo = { ModLoaderVer };
 }
