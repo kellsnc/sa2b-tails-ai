@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include "helper.h"
+#include "animations.h"
 
 Trampoline* SetPlayer_t = nullptr;
 
@@ -500,6 +502,8 @@ void NpcMilesSet()
 
 void __cdecl SetPlayer_r()
 {
+	TARGET_DYNAMIC(SetPlayer)();
+
 	// Load Tails AI if in a Sonic level
 	if (TwoPlayerMode == false)
 	{
@@ -513,8 +517,6 @@ void __cdecl SetPlayer_r()
 	{
 		WriteData<1>((char*)0x46B02E, (char)0x02); // Restore DeathZone
 	}
-
-	TARGET_DYNAMIC(SetPlayer)();
 }
 
 // Patches:
@@ -537,7 +539,7 @@ void __cdecl RemoveTailsVoice(int idk, int num)
 	}
 }
 
-static void __declspec(naked) PlayVoiceAsm(int idk, int num)
+static void __declspec(naked) PlayVoiceAsm()
 {
 	__asm
 	{
@@ -558,7 +560,7 @@ void __cdecl RemoveTailsSound(int ID, int Entity, char Bank, char Volume)
 	}
 }
 
-static void __declspec(naked) PlaySoundAsm(int ID, int Entity, char Bank, char Volume)
+static void __declspec(naked) PlaySoundAsm()
 {
 	__asm
 	{
@@ -590,6 +592,8 @@ extern "C"
 		// Remove Tails Sound Effects when AI
 		WriteCall((void*)0x751C7E, PlaySoundAsm);
 		WriteCall((void*)0x74EB6A, PlaySoundAsm);
+
+		PatchAnimations();
 	}
 
 	__declspec(dllexport) ModInfo SA2ModInfo = { ModLoaderVer };
