@@ -1,6 +1,7 @@
 #pragma once
 
 #define TARGET_DYNAMIC(name) ((decltype(name##_r)*)name##_t->Target())
+#define STATUS_FLOOR (Status_Unknown1 | Status_Ground)
 
 static constexpr int MaxPlayers = 2;
 
@@ -15,8 +16,8 @@ struct motionwk {
 	float weight;
 };
 
-ObjectFunc(Tails_AlphaDisplay, 0x74FF20);
-DataArray(motionwk*, MainCharMotions, 0x1DE95E0, MaxPlayers);
+DataArray(motionwk*, playermwp, 0x1DE95E0, 8);
+DataPointer(ObjectMaster*, pMiniEventTask, 0x19456A8);
 
 enum GeneralActions {
 	GeneralActions_12 = 12,
@@ -27,24 +28,11 @@ enum GeneralActions {
 static Buttons JumpButtons = Buttons_A;
 static Buttons AttackButtons = Buttons_X;
 
-void ForcePlayerAction(EntityData1* data, GeneralActions gaction);
-void DisableController(int index);
-void EnableController(int index);
+void SetInputP_(EntityData1* data, GeneralActions gaction);
+void PadReadOffP_(int index);
+void PadReadOnP_(int index);
 void GetPlayerSidePos(NJS_VECTOR* pos, EntityData1* entity, float dist);
-void SetToCameraPosition(NJS_VECTOR* pos);
+void SetToCameraPosition(NJS_VECTOR* pos, int pnum);
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
-bool SavePlayerPosition(int playerNum, int unk, NJS_VECTOR* pos, Rotation* rot);
-float normalizevector(NJS_VECTOR* vo, NJS_VECTOR* vd);
-
-static const void* const CheckRangeOutPtr = (void*)0x488C50;
-static inline int CheckRangeOut(ObjectMaster* obj)
-{
-	int result;
-	__asm
-	{
-		mov edx, [obj]
-		call CheckRangeOutPtr
-		mov result, eax
-	}
-	return result;
-}
+bool SetPlayerPosition_(int playerNum, int unk, NJS_VECTOR* pos, Rotation* rot);
+float ghUnitVector_(NJS_VECTOR* vo, NJS_VECTOR* vd);
