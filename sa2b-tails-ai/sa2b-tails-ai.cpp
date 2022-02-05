@@ -36,58 +36,73 @@ TailsAI* TailsAIWorker = nullptr;
 
 // AI functions
 
-void SetTailsFlying(EntityData1* twk, motionwk* pwk, CharObj2Base* co2) {
-	pwk->spd.z = 0.0;
-	pwk->spd.y = 0.0;
-	pwk->spd.x = 0.0;
-	co2->Speed.z = 0.0;
-	co2->Speed.y = 0.0;
-	co2->Speed.x = 0.0;
+void SetTailsFlying(EntityData1* twk, motionwk* pwk, CharObj2Base* co2)
+{
+	pwk->spd.z = 0.0f;
+	pwk->spd.y = 0.0f;
+	pwk->spd.x = 0.0f;
+	co2->Speed.z = 0.0f;
+	co2->Speed.y = 0.0f;
+	co2->Speed.x = 0.0f;
 	ForcePlayerAction(twk, GeneralAction_Fly);
 }
 
-float AI_RangeMax(float xmag) {
-	if (xmag <= 1.0f) {
-		if (xmag < 0.1f) {
+float AI_RangeMax(float xmag)
+{
+	if (xmag <= 1.0f)
+	{
+		if (xmag < 0.1f)
+		{
 			xmag = 0.0f;
 		}
 	}
-	else {
+	else
+	{
 		xmag = 1.0f;
 	}
 
 	return xmag;
 }
 
-void AI_BrakeVelocity(NJS_VECTOR* spd, float* xmag, Angle* rot) {
-	if (spd->x != 0.0 || spd->z != 0.0) {
-		if (xmag) {
-			*xmag = 1.0;
+void AI_BrakeVelocity(NJS_VECTOR* spd, float* xmag, Angle* rot)
+{
+	if (spd->x != 0.0 || spd->z != 0.0)
+	{
+		if (xmag)
+		{
+			*xmag = 1.0f;
 		}
 
-		if (rot) {
+		if (rot)
+		{
 			*rot = 0x8000 - (unsigned __int64)(atan2(spd->z, spd->x) * 65536.0 * -0.1591549762031479);
 		}
 	}
-	else {
-		if (xmag) {
-			*xmag = 0.0;
+	else
+	{
+		if (xmag)
+		{
+			*xmag = 0.0f;
 		}
 
-		if (rot) {
+		if (rot)
+		{
 			*rot = 0;
 		}
 	}
 }
 
-bool AI_RangeOut(EntityData1* p1, EntityData1* p2) {
+bool AI_RangeOut(EntityData1* p1, EntityData1* p2)
+{
 	float dist = GetDistance(&p1->Position, &p2->Position);
 
-	if (dist > 1000.0f) {
+	if (dist > 1000.0f)
+	{
 		return true;
 	}
 
-	if (dist >= 50.0f) {
+	if (dist >= 50.0f)
+	{
 		// screen projection here
 		return false;
 	}
@@ -95,7 +110,8 @@ bool AI_RangeOut(EntityData1* p1, EntityData1* p2) {
 	return false;
 }
 
-void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, CharObj2Base* playerco2, EntityData1* leadertwk) {
+void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, CharObj2Base* playerco2, EntityData1* leadertwk)
+{
 	int playerid = playerco2->PlayerNum;
 	int leaderid = 0;
 
@@ -123,28 +139,37 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 		aiwk->subaction = AISubActions::Normal;
 		break;
 	case AISubActions::Normal:
-		if (mag >= 15.0f) {
-			if (mag >= 40.0f) {
+		if (mag >= 15.0f)
+		{
+			if (mag >= 40.0f)
+			{
 				xmag = 1.0f;
 			}
-			else {
+			else
+			{
 				xmag = (mag - 20.0f) * 0.025f + 0.5f;
 			}
 		}
-		else if (leadco2->Speed.x >= (double)leadco2->PhysData.RollCancel || playerco2->Speed.x <= (double)playerco2->PhysData.RollEnd) {
-			if (playerco2->Speed.x == 0.0f && mag >= 1.0f) {
+		else if (leadco2->Speed.x >= (double)leadco2->PhysData.RollCancel || playerco2->Speed.x <= (double)playerco2->PhysData.RollEnd)
+		{
+			if (playerco2->Speed.x == 0.0f && mag >= 1.0f)
+			{
 				xmag = 0.0049999999f;
 			}
-			else {
+			else
+			{
 				xmag = 0.0f;
 			}
 		}
-		else {
+		else
+		{
 			AI_BrakeVelocity(&playermwk->spd, &xmag, &angle);
 		}
 
-		if (playertwk->Status & (Status_Unknown1 | Status_Ground)) {
-			if (leadpos->y - aipos->y > 20.0f && leadco2->Speed.x < leadco2->PhysData.RollEnd) {
+		if (playertwk->Status & (Status_Unknown1 | Status_Ground))
+		{
+			if (leadpos->y - aipos->y > 20.0f && leadco2->Speed.x < leadco2->PhysData.RollEnd)
+			{
 				pressed |= JumpButtons;
 				aiwk->subaction = AISubActions::Run;
 			}
@@ -172,13 +197,16 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 	case AISubActions::Unknown3:
 		xmag = AI_RangeMax(mag * 0.05f);
 
-		if (playertwk->Status & (Status_Unknown1 | Status_Ground)) {
+		if (playertwk->Status & (Status_Unknown1 | Status_Ground))
+		{
 			aiwk->subaction = AISubActions::Normal;
 		}
-		else if (mag >= 20.0f || leadpos->y >= aipos->y) {
+		else if (mag >= 20.0f || leadpos->y >= aipos->y)
+		{
 			held |= JumpButtons;
 		}
-		else {
+		else
+		{
 			pressed = AttackButtons | Controllers[playerid].press;
 		}
 
@@ -186,7 +214,8 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 		case AISubActions::Unknown4:
 			xmag = AI_RangeMax(mag * 0.05f);
 
-			if (playertwk->Status & (Status_Unknown1 | Status_Ground)) {
+			if (playertwk->Status & (Status_Unknown1 | Status_Ground))
+			{
 				aiwk->subaction = AISubActions::Normal;
 			}
 			else if (playertwk->Position.y - leadpos->y < 20.0f)
@@ -202,11 +231,13 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 			diff.y = leadpos->y - aipos->y;
 			diff.z = leadpos->z - aipos->z;
 
-			if (njScalor(&diff) < 50.0f || playertwk->Status & Status_Hurt) {
+			if (njScalor(&diff) < 50.0f || playertwk->Status & Status_Hurt)
+			{
 				aiwk->subaction = AISubActions::Normal;
 				held |= AttackButtons;
 			}
-			else {
+			else
+			{
 				normalizevector(&diff, &diff);
 				aipos->x += diff.x;
 				aipos->y += diff.y;
@@ -217,10 +248,12 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 		return;
 	}
 
-	if (GetDistance(&aiwk->pos_backup, aipos) >= 1.0f) {
+	if (GetDistance(&aiwk->pos_backup, aipos) >= 1.0f)
+	{
 		aiwk->timer_nomove = 0;
 	}
-	else if (++aiwk->timer_nomove > 60 && mag > 30.0f) {
+	else if (++aiwk->timer_nomove > 60 && mag > 30.0f)
+	{
 		aiwk->timer_nomove = 0;
 		pressed |= JumpButtons;
 		aiwk->subaction = AISubActions::Run;
@@ -235,24 +268,29 @@ void CharacterAI_WriteAnalog(TailsAI* aiwk, EntityData1* playertwk, motionwk* pl
 	AnalogThings[playerid].direction = angle;
 	AnalogThings[playerid].magnitude = xmag;
 
-	if (pressed & JumpButtons) {
+	if (pressed & JumpButtons)
+	{
 		Jump_Pressed[playerid] = true;
 	}
 	
-	if (held & JumpButtons) {
+	if (held & JumpButtons)
+	{
 		Jump_Held[playerid] = true;
 	}
 
-	if (pressed & AttackButtons) {
+	if (pressed & AttackButtons)
+	{
 		Action_Pressed[playerid] = true;
 	}
 
-	if (held & AttackButtons) {
+	if (held & AttackButtons)
+	{
 		Action_Held[playerid] = true;
 	}
 }
 
-void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, CharObj2Base* playerco2) {
+void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, CharObj2Base* playerco2)
+{
 	int leaderid = 0; // Player the AI follows
 	int playerid = playerco2->PlayerNum;
 
@@ -276,14 +314,14 @@ void TailsAI_Main(TailsAI* aiwk, EntityData1* playertwk, motionwk* playermwk, Ch
 		DisableController(playerid);
 		SetToCameraPosition(&playertwk->Position);
 		playertwk->Position.y = leadertwk->Position.y + 50.0f;
-SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
-SetTailsFlying(playertwk, playermwk, playerco2);
-Controllers[playerid].on |= Buttons_A;
-Controllers[playerid].press |= Buttons_A;
+		SavePlayerPosition(playerid, 0, &playertwk->Position, 0);
+		SetTailsFlying(playertwk, playermwk, playerco2);
+		Controllers[playerid].on |= Buttons_A;
+		Controllers[playerid].press |= Buttons_A;
 
-aiwk->action = AIActions::Run;
-aiwk->subaction = AISubActions::Unknown3;
-break;
+		aiwk->action = AIActions::Run;
+		aiwk->subaction = AISubActions::Unknown3;
+		break;
 	case AIActions::Fly:
 		DisableController(playerid);
 		SetTailsFlying(playertwk, playermwk, playerco2);
@@ -313,12 +351,15 @@ break;
 
 		break;
 	case AIActions::PlayerControl: // let the player be moved by controller, reactive AI if 300 frames elapsed
-		if (Controllers[playerid].on & (Buttons_L | Buttons_R | Buttons_X | Buttons_Y | Buttons_Right | Buttons_Left | Buttons_Down | Buttons_Up | Buttons_A | Buttons_B)) {
+		if (Controllers[playerid].on & (Buttons_L | Buttons_R | Buttons_X | Buttons_Y | Buttons_Right | Buttons_Left | Buttons_Down | Buttons_Up | Buttons_A | Buttons_B))
+		{
 			EnableController(playerid);
 			aiwk->timer_rangeout = 0;
 		}
-		else {
-			if (++aiwk->timer_rangeout > 300) {
+		else
+		{
+			if (++aiwk->timer_rangeout > 300)
+			{
 				DisableController(playerid);
 				aiwk->timer_rangeout = 0;
 				aiwk->action = AIActions::Run;
@@ -326,7 +367,8 @@ break;
 		}
 
 		// Too far away
-		if (AI_RangeOut(playertwk, leadertwk)) {
+		if (AI_RangeOut(playertwk, leadertwk))
+		{
 			aiwk->timer_rangeout = 0;
 			aiwk->action = AIActions::Respawn;
 		}
@@ -366,19 +408,26 @@ break;
 }
 
 // Tails' Object with the AI:
+void __cdecl TailsWithAI_Main(ObjectMaster* obj)
+{
+	if (CheckRangeOut(obj))
+	{
+		return;
+	}
 
-void __cdecl TailsWithAI_Main(ObjectMaster* obj) {
 	TailsAI_Main((TailsAI*)obj->field_4C, obj->Data1.Entity, (motionwk*)obj->EntityData2, obj->Data2.Character);
 	Tails_Main(obj);
 
 	CameraScreensInfoArray[1] = CameraScreensInfoArray[0];
 }
 
-void __cdecl TailsWithAI_Delete(ObjectMaster* obj) {
+void __cdecl TailsWithAI_Delete(ObjectMaster* obj)
+{
 	delete obj->field_4C;
 }
 
-void LoadTailsWithAI(int playerid) {
+void LoadTailsWithAI(int playerid)
+{
 	LoadTails(1);
 
 	TailsAIWorker = new TailsAI();
@@ -388,64 +437,68 @@ void LoadTailsWithAI(int playerid) {
 	MainCharacter[playerid]->DeleteSub = TailsWithAI_Delete;
 }
 
-void LoadCharacters_r() {
-	NonStaticFunctionPointer(void, Original, (), LoadCharacters_t->Target());
-	
+void LoadCharacters_r()
+{
 	// Load Tails AI if in a Sonic level
-	if (TwoPlayerMode == false) {
-		if (CurrentCharacter == Characters_Sonic) {
+	if (TwoPlayerMode == false)
+	{
+		if (CurrentCharacter == Characters_Sonic)
+		{
 			LoadTailsWithAI(1);
 			WriteData<1>((char*)0x46B02E, (char)0x01); // Deathzone only for P1
 		}
 	}
-	else {
+	else
+	{
 		WriteData<1>((char*)0x46B02E, (char)0x02); // Restore DeathZone
 	}
 
-	Original();
+	TARGET_DYNAMIC(LoadCharacters)();
 }
 
 // Fix functions
 
-int __cdecl DamagePlayer_r(EntityData1* data1, CharObj2Base* data2) {
-	if (TailsAIWorker && data2->PlayerNum == 1 && data2->CharID == Characters_Tails) {
-		return 0;
+BOOL __cdecl DamagePlayer_r(EntityData1* data1, CharObj2Base* data2)
+{
+	if (TailsAIWorker && data2->PlayerNum == 1 && data2->CharID == Characters_Tails)
+	{
+		return FALSE;
 	}
 	
 	return DamagePlayer(data1, data2);
 }
 
-void __cdecl RemoveTailsVoice(int idk, int num) {
-	if (TailsAIWorker) {
-		return;
+void __cdecl RemoveTailsVoice(int idk, int num)
+{
+	if (!TailsAIWorker)
+	{
+		PlayVoice(idk, num);
 	}
-	
-	PlayVoice(idk, num);
 }
 
-static void __declspec(naked) PlayVoiceAsm(int idk, int num) {
+static void __declspec(naked) PlayVoiceAsm(int idk, int num)
+{
 	__asm
 	{
 		push[esp + 04h]
 		push edx
-
 		call RemoveTailsVoice
-
 		pop edx
 		add esp, 4
 		retn
 	}
 }
 
-void __cdecl RemoveTailsSound(int ID, int Entity, char Bank, char Volume) {
-	if (TailsAIWorker) {
-		return;
+void __cdecl RemoveTailsSound(int ID, int Entity, char Bank, char Volume)
+{
+	if (!TailsAIWorker)
+	{
+		PlaySoundProbably(ID, Entity, Bank, Volume);
 	}
-	
-	PlaySoundProbably(ID, Entity, Bank, Volume);
 }
 
-static void __declspec(naked) PlaySoundAsm(int ID, int Entity, char Bank, char Volume) {
+static void __declspec(naked) PlaySoundAsm(int ID, int Entity, char Bank, char Volume)
+{
 	__asm
 	{
 		push[esp + 0Ch] // Volume
@@ -459,16 +512,21 @@ static void __declspec(naked) PlaySoundAsm(int ID, int Entity, char Bank, char V
 	}
 }
 
-extern "C" {
-	__declspec(dllexport) void Init() {
-		LoadCharacters_t = new Trampoline((intptr_t)LoadCharacters, (intptr_t)LoadCharacters + 0x6, LoadCharacters_r);
+extern "C"
+{
+	__declspec(dllexport) void Init()
+	{
+		// Load Tails AI with Sonic
+		LoadCharacters_t = new Trampoline(0x43D630, 0x43D636, LoadCharacters_r);
+
+		// Prevent Tails AI from hurting player
 		WriteCall((void*)0x74dc9c, DamagePlayer_r);
 
-		////Remove Tails voice when AI
+		// Remove Tails voice when AI
 		WriteCall((void*)0x751C90, PlayVoiceAsm);
 		WriteCall((void*)0x752DE1, PlayVoiceAsm);
 
-		////Remove Tails Sound Effects when AI
+		// Remove Tails Sound Effects when AI
 		WriteCall((void*)0x751C7E, PlaySoundAsm);
 		WriteCall((void*)0x74EB6A, PlaySoundAsm);
 	}

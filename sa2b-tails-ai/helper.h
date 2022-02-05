@@ -1,5 +1,7 @@
 #pragma once
 
+#define TARGET_DYNAMIC(name) ((decltype(name##_r)*)name##_t->Target())
+
 static constexpr int MaxPlayers = 2;
 
 struct motionwk {
@@ -33,3 +35,16 @@ void SetToCameraPosition(NJS_VECTOR* pos);
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
 bool SavePlayerPosition(int playerNum, int unk, NJS_VECTOR* pos, Rotation* rot);
 float normalizevector(NJS_VECTOR* vo, NJS_VECTOR* vd);
+
+static const void* const CheckRangeOutPtr = (void*)0x488C50;
+static inline int CheckRangeOut(ObjectMaster* obj)
+{
+	int result;
+	__asm
+	{
+		mov edx, [obj]
+		call CheckRangeOutPtr
+		mov result, eax
+	}
+	return result;
+}
