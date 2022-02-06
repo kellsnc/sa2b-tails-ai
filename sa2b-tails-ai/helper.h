@@ -1,7 +1,7 @@
 #pragma once
 
 #define TARGET_DYNAMIC(name) ((decltype(name##_r)*)name##_t->Target())
-#define STATUS_FLOOR (Status_Unknown1 | Status_Ground)
+#define STATUS_FLOOR (Status_OnObjectColli | Status_Ground)
 
 static constexpr int MaxPlayers = 2;
 

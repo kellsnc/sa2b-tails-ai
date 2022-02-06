@@ -137,7 +137,7 @@ void NpcMilesControl(ObjectMaster* tp)
 				xmag = (mag - 20.0f) * 0.025f + 0.5f;
 			}
 		}
-		else if (target_pwp->Speed.x >= (double)target_pwp->PhysData.RollCancel || pwp->Speed.x <= (double)pwp->PhysData.RollEnd)
+		else if (target_pwp->Speed.x >= (double)target_pwp->PhysData.JogSpeed || pwp->Speed.x <= (double)pwp->PhysData.RunSpeed)
 		{
 			if (pwp->Speed.x == 0.0f && mag >= 1.0f)
 			{
@@ -155,7 +155,7 @@ void NpcMilesControl(ObjectMaster* tp)
 
 		if (twp->Status & STATUS_FLOOR)
 		{
-			if (leadpos->y - aipos->y > 20.0f && target_pwp->Speed.x < target_pwp->PhysData.RollEnd)
+			if (leadpos->y - aipos->y > 20.0f && target_pwp->Speed.x < target_pwp->PhysData.RunSpeed)
 			{
 				pressed |= JumpButtons;
 				aiwk->subaction = AISubActions::Run;
@@ -361,6 +361,15 @@ void __cdecl Miles2PControl(ObjectMaster* tp)
 	{
 		SetInputP_(twp, GeneralActions_12);
 		aiwk->action = AIActions::Wait;
+	}
+
+	// Prevent AI from hurting you
+	if (twp->Collision)
+	{
+		for (int i = 0; i < twp->Collision->Count; ++i)
+		{
+			twp->Collision->CollisionArray[i].damage &= ~0x20u;
+		}
 	}
 
 	switch (aiwk->action) {
