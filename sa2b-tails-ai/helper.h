@@ -20,9 +20,9 @@ DataArray(motionwk*, playermwp, 0x1DE95E0, 8);
 DataPointer(ObjectMaster*, pMiniEventTask, 0x19456A8);
 
 enum GeneralActions {
-	GeneralActions_12 = 12,
-	GeneralActions_24 = 24,
-	GeneralAction_Fly = 29
+	GeneralActions_ObjectCtrl = 9, // SADX: 12
+	GeneralActions_Reset = 15, // SADX: 24
+	GeneralAction_Fly = 29 // SADX: 48
 };
 
 static Buttons JumpButtons = Buttons_A;

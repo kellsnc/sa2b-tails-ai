@@ -313,7 +313,7 @@ void NpcMilesManageRangeOut(TailsAI* aiwk, EntityData1* twp1, EntityData1* twp2)
 		else
 		{
 			aiwk->action = AIActions::Respawn;
-			SetInputP_(twp1, GeneralActions_24);
+			SetInputP_(twp1, GeneralActions_Reset);
 			PadReadOffP_(aiwk->pnum);
 		}
 	}
@@ -343,7 +343,7 @@ bool NpcMilesCanBorn()
 
 void ComeBackNpcMiles(TailsAI* aiwk, EntityData1* twp)
 {
-	SetInputP_(twp, GeneralActions_24);
+	SetInputP_(twp, GeneralActions_Reset);
 	PadReadOffP_(aiwk->pnum);
 	aiwk->action = AIActions::Respawn;
 }
@@ -357,9 +357,10 @@ void __cdecl Miles2PControl(ObjectMaster* tp)
 	auto pwp = ptp->Data2.Character;
 	auto target_twp = MainCharObj1[aiwk->tgtnum];
 
+	// If tails AI should no longer be here
 	if (!NpcMilesCanBorn())
 	{
-		SetInputP_(twp, GeneralActions_12);
+		SetInputP_(twp, GeneralActions_ObjectCtrl);
 		aiwk->action = AIActions::Wait;
 	}
 
@@ -376,7 +377,7 @@ void __cdecl Miles2PControl(ObjectMaster* tp)
 	case AIActions::Start: // Place the AI behind the leader
 		PadReadOffP_(aiwk->pnum);
 		aiwk->timer_rangeout = 0;
-		GetPlayerSidePos(&twp->Position, target_twp, 10.0);
+		GetPlayerSidePos(&twp->Position, target_twp, 10.0f); // put behind player
 		SetPlayerPosition_(aiwk->pnum, 0, &twp->Position, 0);
 		aiwk->action = AIActions::Run;
 		aiwk->subaction = AISubActions::Init;
@@ -464,7 +465,7 @@ void __cdecl Miles2PControl(ObjectMaster* tp)
 		aiwk->timer_rangeout += 1;
 
 		if (aiwk->timer_rangeout > 3) {
-			SetInputP_(twp, GeneralActions_12);
+			SetInputP_(twp, GeneralActions_ObjectCtrl);
 			aiwk->action = AIActions::StandBy;
 		}
 		break;
