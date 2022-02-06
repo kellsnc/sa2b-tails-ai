@@ -9,6 +9,8 @@ static constexpr int bytecount = sizeof(AnimationIndex) * animcount;
 static AnimationIndex CmnAnimations[animcount]{};
 static AnimationIndex TailsAnimations[animcount]{};
 
+extern ObjectMaster* pNpcMilesTask;
+
 AnimationIndex* LoadCmnMTN_(const char* name)
 {
 	auto mem = LoadMTNFile((char*)"PLCOMMTN.PRS");
@@ -29,13 +31,20 @@ static void __declspec(naked) LoadCmnMTN()
 
 AnimationIndex* LoadTailsMTN_(const char* name)
 {
-	AnimationIndex temp[animcount];
-	memcpy(temp, CharacterAnimations, bytecount);
-	memcpy(CharacterAnimations, CmnAnimations, bytecount);
-	auto mem = LoadMTNFile((char*)name);
-	memcpy(TailsAnimations, CharacterAnimations, bytecount);
-	memcpy(CharacterAnimations, temp, bytecount);
-	return mem;
+	if (pNpcMilesTask)
+	{
+		AnimationIndex temp[animcount];
+		memcpy(temp, CharacterAnimations, bytecount);
+		memcpy(CharacterAnimations, CmnAnimations, bytecount);
+		auto mem = LoadMTNFile((char*)name);
+		memcpy(TailsAnimations, CharacterAnimations, bytecount);
+		memcpy(CharacterAnimations, temp, bytecount);
+		return mem;
+	}
+	else
+	{
+		return LoadMTNFile((char*)name);
+	}
 }
 
 static void __declspec(naked) LoadTailsMTN()
@@ -51,9 +60,16 @@ static void __declspec(naked) LoadTailsMTN()
 
 void __cdecl PSetTailsMotion_(CharAnimInfo* mjp)
 {
-	memcpy(CharacterAnimations, TailsAnimations, bytecount);
-	PSetMotion(mjp);
-	memcpy(TailsAnimations, CharacterAnimations, bytecount);
+	if (pNpcMilesTask)
+	{
+		memcpy(CharacterAnimations, TailsAnimations, bytecount);
+		PSetMotion(mjp);
+		memcpy(TailsAnimations, CharacterAnimations, bytecount);
+	}
+	else
+	{
+		PSetMotion(mjp);
+	}
 }
 
 static void __declspec(naked) PSetTailsMotion()
