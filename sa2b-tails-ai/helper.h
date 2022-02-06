@@ -36,3 +36,13 @@ void SetToCameraPosition(NJS_VECTOR* pos, int pnum);
 float GetDistance(NJS_VECTOR* orig, NJS_VECTOR* dest);
 bool SetPlayerPosition_(int playerNum, int unk, NJS_VECTOR* pos, Rotation* rot);
 float ghUnitVector_(NJS_VECTOR* vo, NJS_VECTOR* vd);
+
+static const void* const PSetMotionPtr = (void*)0x4692A0;
+static inline void PSetMotion(CharAnimInfo* mjp)
+{
+	__asm
+	{
+		mov esi, [mjp]
+		call PSetMotionPtr
+	}
+}
