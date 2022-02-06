@@ -348,6 +348,17 @@ void ComeBackNpcMiles(TailsAI* aiwk, EntityData1* twp)
 	aiwk->action = AIActions::Respawn;
 }
 
+void NpcMilesCustomPhysics(CharObj2Base* pwp)
+{
+	pwp->PhysData.AirAccel = 0.05f;
+	pwp->PhysData.SpeedMaxH = 2.0f;
+	pwp->PhysData.HangTime = 60;
+	pwp->PhysData.JumpSpeed = 1.8f;
+	pwp->PhysData.RunAccel = 0.05f;
+	pwp->PhysData.AirResist = -0.008f;
+	pwp->PhysData.DashSpeed = 5.09f;
+}
+
 void __cdecl Miles2PControl(ObjectMaster* tp)
 {
 	auto aiwk = (TailsAI*)tp->Data1.Entity;
@@ -381,6 +392,7 @@ void __cdecl Miles2PControl(ObjectMaster* tp)
 		SetPlayerPosition_(aiwk->pnum, 0, &twp->Position, 0);
 		aiwk->action = AIActions::Run;
 		aiwk->subaction = AISubActions::Init;
+		NpcMilesCustomPhysics(pwp);
 		break;
 	case AIActions::Unknown1:
 		twp->Position = target_twp->Position;
