@@ -602,7 +602,7 @@ extern "C"
 	__declspec(dllexport) void Init()
 	{
 		// Load Tails AI with Sonic
-		SetPlayer_t = new Trampoline(0x43D630, 0x43D636, SetPlayer_r);
+		/**SetPlayer_t = new Trampoline(0x43D630, 0x43D636, SetPlayer_r);
 
 		// Prevent Tails AI from hurting player
 		WriteCall((void*)0x74dc9c, DamagePlayer_r);
@@ -613,7 +613,7 @@ extern "C"
 
 		// Remove Tails Sound Effects when AI
 		WriteCall((void*)0x751C7E, PlaySoundAsm);
-		WriteCall((void*)0x74EB6A, PlaySoundAsm);
+		WriteCall((void*)0x74EB6A, PlaySoundAsm);*/
 
 		PatchAnimations();
 	}
