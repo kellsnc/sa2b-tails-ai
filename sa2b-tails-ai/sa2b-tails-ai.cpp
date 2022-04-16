@@ -519,12 +519,12 @@ void NpcMilesSet()
 
 		EV_NpcMilesStandByOff();
 		LoadTails(1);
+		MainCharObj1[1]->Index = 1;
 	}
 }
 
 void __cdecl SetPlayer_r()
 {
-	TARGET_DYNAMIC(SetPlayer)();
 
 	// Load Tails AI if in a Sonic level
 	if (TwoPlayerMode == false)
@@ -539,6 +539,8 @@ void __cdecl SetPlayer_r()
 	{
 		WriteData<1>((char*)0x46B02E, (char)0x02); // Restore DeathZone
 	}
+
+	TARGET_DYNAMIC(SetPlayer)();
 }
 
 // Patches:
@@ -602,7 +604,7 @@ extern "C"
 	__declspec(dllexport) void Init()
 	{
 		// Load Tails AI with Sonic
-		/**SetPlayer_t = new Trampoline(0x43D630, 0x43D636, SetPlayer_r);
+		SetPlayer_t = new Trampoline(0x43D630, 0x43D636, SetPlayer_r);
 
 		// Prevent Tails AI from hurting player
 		WriteCall((void*)0x74dc9c, DamagePlayer_r);
@@ -613,7 +615,7 @@ extern "C"
 
 		// Remove Tails Sound Effects when AI
 		WriteCall((void*)0x751C7E, PlaySoundAsm);
-		WriteCall((void*)0x74EB6A, PlaySoundAsm);*/
+		WriteCall((void*)0x74EB6A, PlaySoundAsm);
 
 		PatchAnimations();
 	}
