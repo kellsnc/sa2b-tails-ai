@@ -333,12 +333,20 @@ static void EV_NpcMilesStandByOff()
 
 static bool NpcMilesCanBorn()
 {
-	if (NpcMilesStandByFlag || CurrentCharacter != Characters_Sonic || pMiniEventTask)
+	if (TwoPlayerMode || NpcMilesStandByFlag || CurrentCharacter != Characters_Sonic || pMiniEventTask)
 	{
 		return false;
 	}
 
-	// Todo: blacklist levels
+	switch (CurrentLevel)
+	{
+	case LevelIDs_SonicVsShadow1:
+	case LevelIDs_SonicVsShadow2:
+	case LevelIDs_TailsVsEggman1:
+	case LevelIDs_TailsVsEggman2:
+	case LevelIDs_KnucklesVsRouge:
+		return false;
+	}
 
 	return true;
 }
@@ -510,7 +518,7 @@ static void __cdecl NpcMilesControlDestructor(ObjectMaster* obj)
 
 static void NpcMilesSet()
 {
-	if (!pNpcMilesTask /*&& NpcMilesCanBorn()*/)
+	if (!pNpcMilesTask)
 	{
 		pNpcMilesTask = LoadObject(0, "Miles2PControl", Miles2PControl, LoadObj_Data1);
 		pNpcMilesTask->DeleteSub = NpcMilesControlDestructor;
@@ -521,7 +529,6 @@ static void NpcMilesSet()
 
 		EV_NpcMilesStandByOff();
 		LoadTails(1);
-		MainCharObj1[1]->Index = 1;
 	}
 }
 
@@ -529,14 +536,10 @@ static void __cdecl SetPlayer_r();
 Trampoline SetPlayer_t(0x43D630, 0x43D636, SetPlayer_r);
 static void __cdecl SetPlayer_r()
 {
-	// Load Tails AI if in a Sonic level
-	if (TwoPlayerMode == false)
+	if (NpcMilesCanBorn())
 	{
-		if (NpcMilesCanBorn())
-		{
-			NpcMilesSet();
-			WriteData<1>((char*)0x46B02E, (char)0x01); // Deathzone only for P1
-		}
+		NpcMilesSet();
+		WriteData<1>((char*)0x46B02E, (char)0x01); // Deathzone only for P1
 	}
 	else
 	{
