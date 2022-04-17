@@ -57,6 +57,32 @@ static void __declspec(naked) PlaySoundAsm()
 	}
 }
 
+void __cdecl PGetRotation_r(EntityData1* twp, motionwk* mwp, CharObj2Base* pwp);
+Trampoline PGetRotation_t(0x45FA70, 0x45FA75, PGetRotation_r);
+void __cdecl PGetRotation_r(EntityData1* twp, motionwk* mwp, CharObj2Base* pwp)
+{
+	// Fix crashes caused by accelerating surfaces because no camera exist for AI
+	if (twp->field_2 == ID_NPC && (int)pwp->CurrentSurfaceFlags & SurfaceFlag_Accelerate)
+	{
+		*(int*)&pwp->CurrentSurfaceFlags &= ~SurfaceFlag_Accelerate;
+	}
+
+	TARGET_STATIC(PGetRotation)(twp, mwp, pwp);
+}
+
+void __cdecl PGetAcceleration_r(EntityData1* twp, motionwk* mwp, CharObj2Base* pwp);
+Trampoline PGetAcceleration_t(0x45B610, 0x45B616, PGetAcceleration_r);
+void __cdecl PGetAcceleration_r(EntityData1* twp, motionwk* mwp, CharObj2Base* pwp)
+{
+	// Fix crashes caused by accelerating surfaces because no camera exist for AI
+	if (twp->field_2 == ID_NPC && (int)pwp->CurrentSurfaceFlags & SurfaceFlag_Accelerate)
+	{
+		*(int*)&pwp->CurrentSurfaceFlags &= ~SurfaceFlag_Accelerate;
+	}
+
+	TARGET_STATIC(PGetAcceleration)(twp, mwp, pwp);
+}
+
 extern "C"
 {
 	__declspec(dllexport) void Init()

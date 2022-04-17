@@ -505,9 +505,6 @@ static void __cdecl Miles2PControl(ObjectMaster* tp)
 	default:
 		return;
 	}
-
-	// Todo: run 2p camera instead
-	CameraScreensInfoArray[1] = CameraScreensInfoArray[0];
 }
 
 static void __cdecl NpcMilesControlDestructor(ObjectMaster* obj)
@@ -530,6 +527,7 @@ static void NpcMilesSet()
 		EV_NpcMilesStandByOff();
 		LoadTails(aiwk->pnum);
 		InitPlayer(aiwk->pnum);
+		MainCharObj1[aiwk->pnum]->field_2 = ID_NPC; // AI controlled player
 	}
 }
 
