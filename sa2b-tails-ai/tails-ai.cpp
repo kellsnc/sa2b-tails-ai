@@ -528,7 +528,8 @@ static void NpcMilesSet()
 		aiwk->tgtnum = 0;
 
 		EV_NpcMilesStandByOff();
-		LoadTails(1);
+		LoadTails(aiwk->pnum);
+		InitPlayer(aiwk->pnum);
 	}
 }
 
