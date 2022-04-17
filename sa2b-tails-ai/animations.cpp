@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "helper.h"
-#include <cstdlib>
 
 // Very hacky stuff to allow unique animations for Tails
 
@@ -12,7 +11,7 @@ static AnimationIndex TailsAnimations[animcount]{};
 
 extern ObjectMaster* pNpcMilesTask;
 
-AnimationIndex* LoadTailsMTN_(const char* name)
+static AnimationIndex* LoadTailsMTN_r(const char* name)
 {
 	if (pNpcMilesTask)
 	{
@@ -33,20 +32,20 @@ AnimationIndex* LoadTailsMTN_(const char* name)
 	}
 }
 
-static void __declspec(naked) LoadTailsMTN()
+static void __declspec(naked) LoadTailsMTN_asm()
 {
 	__asm
 	{
 		push eax
-		call LoadTailsMTN_
+		call LoadTailsMTN_r
 		add esp, 4
 		retn
 	}
 }
 
-void __cdecl PSetTailsMotion_r(CharAnimInfo* mjp)
+static void __cdecl PSetTailsMotion_r(CharAnimInfo* mjp)
 {
-	if (pNpcMilesTask)
+	if (pNpcMilesTask) // todo: rewrite
 	{
 		memcpy(BackupAnimations, CharacterAnimations, bytecount);
 		memcpy(CharacterAnimations, TailsAnimations, bytecount);
@@ -73,7 +72,7 @@ static void __declspec(naked) PSetTailsMotion_asm()
 
 void PatchAnimations()
 {
-	WriteCall((void*)0x74D02B, LoadTailsMTN);
-	WriteCall((void*)0x74D352, PSetTailsMotion_asm);
-	WriteCall((void*)0x74D03C, PSetTailsMotion_asm);
+	WriteCall(reinterpret_cast<void*>(0x74D02B), LoadTailsMTN_asm);
+	WriteCall(reinterpret_cast<void*>(0x74D352), PSetTailsMotion_asm);
+	WriteCall(reinterpret_cast<void*>(0x74D03C), PSetTailsMotion_asm);
 }
