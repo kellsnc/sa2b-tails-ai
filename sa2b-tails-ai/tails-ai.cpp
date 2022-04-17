@@ -1,8 +1,10 @@
 #include "stdafx.h"
+#include <math.h>
+#include "SA2ModLoader.h"
+#include "Trampoline.h"
 #include "helper.h"
 #include "animations.h"
-
-Trampoline* SetPlayer_t = nullptr;
+#include "tails-ai.h"
 
 enum class AIActions {
 	Start,
@@ -37,9 +39,9 @@ struct TailsAI {
 };
 
 ObjectMaster* pNpcMilesTask = nullptr;
-bool NpcMilesStandByFlag = false;
+static bool NpcMilesStandByFlag = false;
 
-void SetPlayerFlyMode(EntityData1* twp, motionwk* mwp, CharObj2Base* pwp)
+static void SetPlayerFlyMode(EntityData1* twp, motionwk* mwp, CharObj2Base* pwp)
 {
 	mwp->spd.z = 0.0f;
 	mwp->spd.y = 0.0f;
@@ -50,7 +52,7 @@ void SetPlayerFlyMode(EntityData1* twp, motionwk* mwp, CharObj2Base* pwp)
 	SetInputP_(twp, GeneralAction_Fly);
 }
 
-float NpcClampRange(float xmag) // fake name
+static float NpcClampRange(float xmag) // fake name
 {
 	if (xmag <= 1.0f)
 	{
@@ -67,7 +69,7 @@ float NpcClampRange(float xmag) // fake name
 	return xmag;
 }
 
-void NpcGetAnalogForBrake(NJS_VECTOR* spd, float* xmag, Angle* rot)
+static void NpcGetAnalogForBrake(NJS_VECTOR* spd, float* xmag, Angle* rot)
 {
 	if (spd->x != 0.0 || spd->z != 0.0)
 	{
@@ -78,7 +80,7 @@ void NpcGetAnalogForBrake(NJS_VECTOR* spd, float* xmag, Angle* rot)
 
 		if (rot)
 		{
-			*rot = 0x8000 - (unsigned __int64)(atan2(spd->z, spd->x) * 65536.0 * -0.1591549762031479);
+			*rot = 0x8000 - NJM_RAD_ANG(-atan2f(spd->z, spd->x));
 		}
 	}
 	else
@@ -95,7 +97,7 @@ void NpcGetAnalogForBrake(NJS_VECTOR* spd, float* xmag, Angle* rot)
 	}
 }
 
-void NpcMilesControl(ObjectMaster* tp)
+static void NpcMilesControl(ObjectMaster* tp)
 {
 	auto aiwk = (TailsAI*)tp->Data1.Entity;
 	auto ptp = MainCharacter[aiwk->pnum];
@@ -111,11 +113,11 @@ void NpcMilesControl(ObjectMaster* tp)
 	NJS_VECTOR diff = { aipos->x - leadpos->x,  0, aipos->z - leadpos->z};
 	njUnitVector(&diff);
 
-	float xmag = diff.x * 5.0 + leadpos->x - aipos->x;
-	float zmag = diff.z * 5.0 + leadpos->z - aipos->z;
+	float xmag = diff.x * 5.0f + leadpos->x - aipos->x;
+	float zmag = diff.z * 5.0f + leadpos->z - aipos->z;
 	float mag = sqrtf(xmag * xmag + zmag * zmag);
 
-	Angle angle = atan2f(zmag, xmag) * 65536.0 * 0.1591549762031479;
+	Angle angle = NJM_RAD_ANG(atan2f(zmag, xmag));
 
 	xmag = 0.0f;
 	int pressed = 0;
@@ -280,7 +282,7 @@ void NpcMilesControl(ObjectMaster* tp)
 	}
 }
 
-int NpcMilesRangeOut(EntityData1* twp1, EntityData1* twp2)
+static int NpcMilesRangeOut(EntityData1* twp1, EntityData1* twp2)
 {
 	float dist = GetDistance(&twp1->Position, &twp2->Position);
 
@@ -298,7 +300,7 @@ int NpcMilesRangeOut(EntityData1* twp1, EntityData1* twp2)
 	return false;
 }
 
-void NpcMilesManageRangeOut(TailsAI* aiwk, EntityData1* twp1, EntityData1* twp2)
+static void NpcMilesManageRangeOut(TailsAI* aiwk, EntityData1* twp1, EntityData1* twp2)
 {
 	auto out = NpcMilesRangeOut(twp1, twp2);
 
@@ -319,17 +321,17 @@ void NpcMilesManageRangeOut(TailsAI* aiwk, EntityData1* twp1, EntityData1* twp2)
 	}
 }
 
-void EV_NpcMilesStandByOn()
+static void EV_NpcMilesStandByOn()
 {
 	NpcMilesStandByFlag = true;
 }
 
-void EV_NpcMilesStandByOff()
+static void EV_NpcMilesStandByOff()
 {
 	NpcMilesStandByFlag = false;
 }
 
-bool NpcMilesCanBorn()
+static bool NpcMilesCanBorn()
 {
 	if (NpcMilesStandByFlag || CurrentCharacter != Characters_Sonic || pMiniEventTask)
 	{
@@ -341,14 +343,14 @@ bool NpcMilesCanBorn()
 	return true;
 }
 
-void ComeBackNpcMiles(TailsAI* aiwk, EntityData1* twp)
+static void ComeBackNpcMiles(TailsAI* aiwk, EntityData1* twp)
 {
 	SetInputP_(twp, GeneralActions_Reset);
 	PadReadOffP_(aiwk->pnum);
 	aiwk->action = AIActions::Respawn;
 }
 
-void NpcMilesCustomPhysics(CharObj2Base* pwp)
+static void NpcMilesCustomPhysics(CharObj2Base* pwp)
 {
 	pwp->PhysData.AirAccel = 0.05f;
 	pwp->PhysData.SpeedMaxH = 2.0f;
@@ -359,7 +361,7 @@ void NpcMilesCustomPhysics(CharObj2Base* pwp)
 	pwp->PhysData.DashSpeed = 5.09f;
 }
 
-void __cdecl Miles2PControl(ObjectMaster* tp)
+static void __cdecl Miles2PControl(ObjectMaster* tp)
 {
 	auto aiwk = (TailsAI*)tp->Data1.Entity;
 	auto ptp = MainCharacter[aiwk->pnum];
@@ -500,13 +502,13 @@ void __cdecl Miles2PControl(ObjectMaster* tp)
 	CameraScreensInfoArray[1] = CameraScreensInfoArray[0];
 }
 
-void __cdecl NpcMilesControlDestructor(ObjectMaster* obj)
+static void __cdecl NpcMilesControlDestructor(ObjectMaster* obj)
 {
 	pNpcMilesTask = nullptr;
 	EV_NpcMilesStandByOff();
 }
 
-void NpcMilesSet()
+static void NpcMilesSet()
 {
 	if (!pNpcMilesTask /*&& NpcMilesCanBorn()*/)
 	{
@@ -523,9 +525,10 @@ void NpcMilesSet()
 	}
 }
 
-void __cdecl SetPlayer_r()
+static void __cdecl SetPlayer_r();
+Trampoline SetPlayer_t(0x43D630, 0x43D636, SetPlayer_r);
+static void __cdecl SetPlayer_r()
 {
-
 	// Load Tails AI if in a Sonic level
 	if (TwoPlayerMode == false)
 	{
@@ -540,85 +543,5 @@ void __cdecl SetPlayer_r()
 		WriteData<1>((char*)0x46B02E, (char)0x02); // Restore DeathZone
 	}
 
-	TARGET_DYNAMIC(SetPlayer)();
-}
-
-// Patches:
-
-BOOL __cdecl DamagePlayer_r(EntityData1* data1, CharObj2Base* data2)
-{
-	if (pNpcMilesTask && data2->PlayerNum == 1 && data2->CharID == Characters_Tails)
-	{
-		return FALSE;
-	}
-	
-	return DamagePlayer(data1, data2);
-}
-
-void __cdecl RemoveTailsVoice(int idk, int num)
-{
-	if (!pNpcMilesTask)
-	{
-		PlayVoice(idk, num);
-	}
-}
-
-static void __declspec(naked) PlayVoiceAsm()
-{
-	__asm
-	{
-		push[esp + 04h]
-		push edx
-		call RemoveTailsVoice
-		pop edx
-		add esp, 4
-		retn
-	}
-}
-
-void __cdecl RemoveTailsSound(int ID, int Entity, char Bank, char Volume)
-{
-	if (!pNpcMilesTask)
-	{
-		PlaySoundProbably(ID, Entity, Bank, Volume);
-	}
-}
-
-static void __declspec(naked) PlaySoundAsm()
-{
-	__asm
-	{
-		push[esp + 0Ch] // Volume
-		push[esp + 0Ch] // Bank
-		push[esp + 0Ch] // Entity
-		push esi // ID
-		call RemoveTailsSound
-		pop esi
-		add esp, 12
-		retn
-	}
-}
-
-extern "C"
-{
-	__declspec(dllexport) void Init()
-	{
-		// Load Tails AI with Sonic
-		SetPlayer_t = new Trampoline(0x43D630, 0x43D636, SetPlayer_r);
-
-		// Prevent Tails AI from hurting player
-		WriteCall((void*)0x74dc9c, DamagePlayer_r);
-
-		// Remove Tails voice when AI
-		WriteCall((void*)0x751C90, PlayVoiceAsm);
-		WriteCall((void*)0x752DE1, PlayVoiceAsm);
-
-		// Remove Tails Sound Effects when AI
-		WriteCall((void*)0x751C7E, PlaySoundAsm);
-		WriteCall((void*)0x74EB6A, PlaySoundAsm);
-
-		PatchAnimations();
-	}
-
-	__declspec(dllexport) ModInfo SA2ModInfo = { ModLoaderVer };
+	TARGET_STATIC(SetPlayer)();
 }

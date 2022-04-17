@@ -1,5 +1,7 @@
 #include "stdafx.h"
+#include "SA2ModLoader.h"
 #include "helper.h"
+#include "tails-ai.h"
 
 // Very hacky stuff to allow unique animations for Tails
 
@@ -8,8 +10,6 @@ static constexpr int bytecount = sizeof(AnimationIndex) * animcount;
 
 static AnimationIndex BackupAnimations[animcount]{};
 static AnimationIndex TailsAnimations[animcount]{};
-
-extern ObjectMaster* pNpcMilesTask;
 
 static AnimationIndex* LoadTailsMTN_r(const char* name)
 {

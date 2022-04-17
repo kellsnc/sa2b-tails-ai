@@ -1,4 +1,7 @@
 #include "stdafx.h"
+#include <math.h>
+#include "SA2ModLoader.h"
+#include "helper.h"
 
 NJS_VECTOR PositionBuffer[MaxPlayers * 256];
 Rotation RotationBuffer[MaxPlayers * 256];
@@ -38,7 +41,7 @@ float njSqrt_(float f)
     }
     else
     {
-        return -sqrtf(f * -1.0);
+        return -sqrtf(f * -1.0f);
     }
 }
 
@@ -64,9 +67,9 @@ void GetPlayerSidePos(NJS_VECTOR* pos, EntityData1* twp, float dist)
     {
         if (pos)
         {
-            pos->x = twp->Position.x - cos(twp->Rotation.y) * dist;
+            pos->x = twp->Position.x - njCos(twp->Rotation.y) * dist;
             pos->y = twp->Position.y;
-            pos->z = twp->Position.z - sin(twp->Rotation.y) * dist;
+            pos->z = twp->Position.z - njSin(twp->Rotation.y) * dist;
         }
     }
 }
