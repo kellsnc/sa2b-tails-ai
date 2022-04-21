@@ -24,9 +24,6 @@
     <ClInclude Include="helper.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="animations.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="tails-ai.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -42,9 +39,6 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="helper.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="animations.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="mod.cpp">

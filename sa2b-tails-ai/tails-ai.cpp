@@ -3,7 +3,6 @@
 #include "SA2ModLoader.h"
 #include "Trampoline.h"
 #include "helper.h"
-#include "animations.h"
 #include "tails-ai.h"
 
 enum class AIActions {
@@ -531,10 +530,13 @@ static void NpcMilesSet()
 	}
 }
 
-static void __cdecl SetPlayer_r();
-Trampoline SetPlayer_t(0x43D630, 0x43D636, SetPlayer_r);
+static Trampoline* SetPlayer_t = nullptr;
+
 static void __cdecl SetPlayer_r()
 {
+	auto original = reinterpret_cast<decltype(SetPlayer_r)*>(SetPlayer_t->Target());
+	original();
+
 	if (NpcMilesCanBorn())
 	{
 		NpcMilesSet();
@@ -544,6 +546,9 @@ static void __cdecl SetPlayer_r()
 	{
 		WriteData<1>((char*)0x46B02E, (char)0x02); // Restore DeathZone
 	}
+}
 
-	TARGET_STATIC(SetPlayer)();
+void Init_MilesNPC()
+{
+	SetPlayer_t = new Trampoline((int)0x43D630, (int)0x43D636, SetPlayer_r);
 }

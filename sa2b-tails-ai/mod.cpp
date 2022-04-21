@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "SA2ModLoader.h"
 #include "tails-ai.h"
-#include "animations.h"
 
 static BOOL __cdecl DamagePlayer_r(EntityData1* data1, CharObj2Base* data2)
 {
@@ -83,10 +82,21 @@ void __cdecl PGetAcceleration_r(EntityData1* twp, motionwk* mwp, CharObj2Base* p
 	TARGET_STATIC(PGetAcceleration)(twp, mwp, pwp);
 }
 
+
 extern "C"
 {
 	__declspec(dllexport) void Init()
 	{
+		HMODULE SA2Anim = GetModuleHandle(L"SA2-Anim-Break");
+
+		if (!SA2Anim)
+		{
+			MessageBox(MainWindowHandle,
+				L"Failed to load SA2-Anim-Break.dll, the mod won't work!\nPlease install SA2 Anim Break mod.", L"SA2 Tails AI: DLL not found!", MB_OK | MB_ICONERROR);
+		}
+
+		Init_MilesNPC();
+
 		// Prevent Tails AI from hurting player
 		WriteCall((void*)0x74dc9c, DamagePlayer_r);
 
@@ -97,8 +107,6 @@ extern "C"
 		// Remove Tails Sound Effects when AI
 		WriteCall((void*)0x751C7E, PlaySoundAsm);
 		WriteCall((void*)0x74EB6A, PlaySoundAsm);
-
-		PatchAnimations();
 	}
 
 	__declspec(dllexport) ModInfo SA2ModInfo = { ModLoaderVer };
